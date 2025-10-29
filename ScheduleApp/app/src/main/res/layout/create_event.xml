@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp"
+    android:padding="24dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="12dp">
+
+    <LinearLayout
+        android:id="@+id/rootLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:fontFamily="sans-serif"> <!-- Roboto -->
+
+        <!-- Дата события -->
+        <TextView
+            android:id="@+id/tvSelectedDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selected date:"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_500"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:fontFamily="sans-serif"/>
+
+        <!-- Время события в одну строчку -->
+        <TextView
+            android:id="@+id/tvSelectedTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time: --:-- - --:--"
+            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif"/>
+
+        <!-- Кнопка выбора времени начала -->
+        <Button
+            android:id="@+id/btnPickStartTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pick Start Time"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="sans-serif"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+        <!-- Кнопка выбора времени окончания -->
+        <Button
+            android:id="@+id/btnPickEndTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pick End Time"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="sans-serif"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+        <!-- Заголовок события -->
+        <EditText
+            android:id="@+id/etEventTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event title"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="?attr/colorOnSurface"/>   <!-- адаптивный цвет фона -->
+
+
+
+        <!-- Выбор категории через Spinner -->
+        <Spinner
+            android:id="@+id/spinnerCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:spinnerMode="dropdown"
+            android:fontFamily="sans-serif"/>
+
+        <!-- Кнопка сохранения -->
+        <Button
+            android:id="@+id/btnSaveEvent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Event"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

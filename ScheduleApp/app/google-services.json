@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "881140139743",
+    "project_id": "samuilfilebase-9464b77b",
+    "storage_bucket": "samuilfilebase-9464b77b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:881140139743:android:e43e63a2adab49aafa0b6a",
+        "android_client_info": {
+          "package_name": "com.example.scheduleapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfKWhw9COTzcyiSQj0yvThBN0FgXg4OQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
