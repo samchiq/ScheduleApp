@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- Тёмная тема для CalendarView -->
+    <style name="CalendarDark" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:weekDayTextAppearance">@style/CalendarDarkText</item>
+        <item name="android:dateTextAppearance">@style/CalendarDarkText</item>
+        <item name="android:colorAccent">?attr/colorPrimary</item>
+    </style>
+    <style name="CalendarDarkText" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+    <style name="RoundedDialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="android:windowBackground">@drawable/bg_card_outlined</item>
+    </style>
+
+</resources>

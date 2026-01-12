@@ -1,0 +1,57 @@
+<!-- colors.xml -->
+<resources>
+    <!-- Basic colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Blue palette (Primary) -->
+    <color name="blue_50">#FFE3F2FD</color>
+    <color name="blue_100">#FFBBDEFB</color>
+    <color name="blue_300">#FF64B5F6</color>
+    <color name="blue_600">#FF1E88E5</color>
+    <color name="blue_800">#FF1565C0</color>
+    <color name="blue_900">#FF0D47A1</color>
+
+    <!-- Teal palette (Secondary) -->
+    <color name="teal_50">#FFE0F2F1</color>
+    <color name="teal_300">#FF4DB6AC</color>
+    <color name="teal_600">#FF00897B</color>
+    <color name="teal_800">#FF00695C</color>
+    <color name="teal_900">#FF004D40</color>
+
+    <!-- Indigo palette (Tertiary) -->
+    <color name="indigo_50">#FFE8EAF6</color>
+    <color name="indigo_300">#FF7986CB</color>
+    <color name="indigo_600">#FF3949AB</color>
+    <color name="indigo_800">#FF283593</color>
+    <color name="indigo_900">#FF1A237E</color>
+
+    <!-- Gray palette (Neutral) -->
+    <color name="gray_50">#FFFAFAFA</color>
+    <color name="gray_100">#FFF5F5F5</color>
+    <color name="gray_200">#FFEEEEEE</color>
+    <color name="gray_300">#FFE0E0E0</color>
+    <color name="gray_600">#FF757575</color>
+    <color name="gray_700">#FF616161</color>
+    <color name="gray_800">#FF424242</color>
+    <color name="gray_900">#FF212121</color>
+
+    <!-- Red palette (Error) -->
+    <color name="red_50">#FFFFEBEE</color>
+    <color name="red_100">#FFFFCDD2</color>
+    <color name="red_400">#FFEF5350</color>
+    <color name="red_600">#FFE53935</color>
+    <color name="red_900">#FFB71C1C</color>
+
+    <!-- Dark theme colors -->
+    <color name="dark_surface">#FF121212</color>
+    <color name="dark_on_surface">#FFFFFFFF</color>
+    <color name="dark_surface_variant">#FF1E1E1E</color>
+    <color name="dark_on_surface_variant">#FFBDBDBD</color>
+
+    <!-- Legacy colors for compatibility -->
+    <color name="purple_500">@color/blue_600</color>
+    <color name="purple_200">@color/blue_100</color>
+    <color name="purple_700">@color/blue_800</color>
+    <color name="red_700">@color/red_600</color>
+</resources>

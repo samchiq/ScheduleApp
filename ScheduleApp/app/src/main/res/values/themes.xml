@@ -1,0 +1,45 @@
+<!-- themes.xml (light) -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="Base.Theme.ScheduleApp" parent="Theme.Material3.DayNight.NoActionBar">
+    <!-- Primary colors -->
+    <item name="colorPrimary">@color/blue_600</item>
+    <item name="colorOnPrimary">@color/white</item>
+    <item name="colorPrimaryContainer">@color/blue_50</item>
+    <item name="colorOnPrimaryContainer">@color/blue_900</item>
+
+    <!-- Secondary colors -->
+    <item name="colorSecondary">@color/teal_600</item>
+    <item name="colorOnSecondary">@color/white</item>
+    <item name="colorSecondaryContainer">@color/teal_50</item>
+    <item name="colorOnSecondaryContainer">@color/teal_900</item>
+
+    <!-- Tertiary colors -->
+    <item name="colorTertiary">@color/indigo_600</item>
+    <item name="colorOnTertiary">@color/white</item>
+    <item name="colorTertiaryContainer">@color/indigo_50</item>
+    <item name="colorOnTertiaryContainer">@color/indigo_900</item>
+
+    <!-- Surface colors -->
+    <item name="colorSurface">@color/white</item>
+    <item name="colorOnSurface">@color/gray_900</item>
+    <item name="colorSurfaceVariant">@color/gray_100</item>
+    <item name="colorOnSurfaceVariant">@color/gray_700</item>
+    <item name="colorSurfaceContainer">@color/gray_50</item>
+
+    <!-- Error colors -->
+    <item name="colorError">@color/red_600</item>
+    <item name="colorOnError">@color/white</item>
+    <item name="colorErrorContainer">@color/red_50</item>
+    <item name="colorOnErrorContainer">@color/red_900</item>
+
+    <!-- Outline colors -->
+    <item name="colorOutline">@color/gray_300</item>
+    <item name="colorOutlineVariant">@color/gray_200</item>
+
+    <!-- Other -->
+    <item name="android:statusBarColor">@color/white</item>
+    <item name="android:navigationBarColor">@color/white</item>
+  </style>
+
+  <style name="Theme.ScheduleApp" parent="Base.Theme.ScheduleApp" />
+</resources>
