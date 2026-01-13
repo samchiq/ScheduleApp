@@ -1,16 +1,35 @@
 <resources>
 
-    <!-- Тёмная тема для CalendarView -->
     <style name="CalendarDark" parent="ThemeOverlay.Material3.Dark">
         <item name="android:weekDayTextAppearance">@style/CalendarDarkText</item>
         <item name="android:dateTextAppearance">@style/CalendarDarkText</item>
         <item name="android:colorAccent">?attr/colorPrimary</item>
     </style>
+
     <style name="CalendarDarkText" parent="@android:style/TextAppearance.Small">
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
-    <style name="RoundedDialog" parent="ThemeOverlay.Material3.Dialog">
-        <item name="android:windowBackground">@drawable/bg_card_outlined</item>
+
+    <style name="Theme.ScheduleApp.HomePage" parent="Theme.ScheduleApp">
+        <item name="materialAlertDialogTheme">@style/App.MaterialAlertDialog</item>
+        <item name="android:dialogTheme">@style/App.CustomDialog</item>
+    </style>
+
+    <style name="App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Dialog.Rounded</item>
+        <item name="android:background">?attr/colorSurfaceContainer</item>
+    </style>
+
+    <style name="App.CustomDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/bg_dialog_rounded</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Dialog.Rounded" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
     </style>
 
 </resources>

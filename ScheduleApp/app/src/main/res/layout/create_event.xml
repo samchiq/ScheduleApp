@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:background="?attr/colorSurfaceContainer">
+    android:background="@drawable/bg_dialog_rounded"
+    android:fillViewport="true">
 
     <LinearLayout
         android:id="@+id/rootLinearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/bg_card_outlined"
         android:padding="24dp">
 
         <TextView

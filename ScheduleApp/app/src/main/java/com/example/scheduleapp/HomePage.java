@@ -184,6 +184,8 @@ public class HomePage extends Menu {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_share_event);
         dialog.setCancelable(true);
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         EditText etPhone = dialog.findViewById(R.id.etPhoneNumber);
         Button btnSend = dialog.findViewById(R.id.btnSend);

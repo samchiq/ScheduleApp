@@ -67,9 +67,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             d.setTitle("Register");
             d.setCancelable(true);
 
-            if (d.getWindow() != null) {
-                d.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-            }
 
             etRegName = d.findViewById(R.id.etRegName);
             etRegNumber = d.findViewById(R.id.etRegNumber);
@@ -79,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             btnSave.setOnClickListener(this);
             d.show();
+            d.getWindow().setBackgroundDrawableResource(R.drawable.bg_dialog_rounded);
         }
 
         if (view == btnSave) {
