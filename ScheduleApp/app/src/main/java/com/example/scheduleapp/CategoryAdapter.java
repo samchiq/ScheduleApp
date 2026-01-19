@@ -24,34 +24,38 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.category_item, parent, false);
         return new CategoryViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category category = categoryList.get(position);
-        holder.tvTitle.setText(category.getName());
-        holder.tvDescription.setText("Category");
+        holder.tvCategoryName.setText(category.getName());
 
-        holder.btnEdit.setOnClickListener(v -> listener.onEditClick(category));
-        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClick(category));
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) listener.onEditClick(category);
+        });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteClick(category);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return categoryList.size();
+        return categoryList != null ? categoryList.size() : 0;
     }
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvDescription;
+        TextView tvCategoryName;
         ImageButton btnEdit, btnDelete;
 
         public CategoryViewHolder(View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvEventTitle);
-            btnEdit = itemView.findViewById(R.id.btnEditEvent);
-            btnDelete = itemView.findViewById(R.id.btnDeleteEvent);
+            tvCategoryName = itemView.findViewById(R.id.tvCategoryName);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }

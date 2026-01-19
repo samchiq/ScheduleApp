@@ -2,10 +2,12 @@ package com.example.scheduleapp;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.SharedPreferences; // Добавлено
 import android.os.Bundle;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat; // Добавлено
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,23 +26,31 @@ public class HomePage extends Menu {
     private FloatingActionButton btnAddEvent;
     private long selectedDate;
     private DatabaseReference eventsRef;
+    private DatabaseReference categoriesRef;
     private RecyclerView recyclerEvents;
     private List<Event> eventList;
     private EventAdapter eventAdapter;
+    private List<Category> userCategories;
+    private SharedPreferences prefs; // Добавлено
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_page);
 
-        // подключаем меню (Menu.setupMenu() загрузит профиль и подпишет на invites)
         setupMenu();
+
+        // Инициализация SharedPreferences
+        prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+
+        // Создаем канал уведомлений (для Android 8.0+)
+        NotificationHelper.createNotificationChannel(this);
+
 
         calendarView = findViewById(R.id.calendarView);
         btnAddEvent = findViewById(R.id.btnAddEvent);
         recyclerEvents = findViewById(R.id.recyclerEvents);
 
-        // currentUser установлен в Menu.setupMenu() — если null, пользователь не залогинен
         if (currentUser == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             finish();
@@ -50,6 +60,11 @@ public class HomePage extends Menu {
         String uid = currentUser.getUid();
         eventsRef = com.google.firebase.database.FirebaseDatabase.getInstance()
                 .getReference("user_events").child(uid);
+        categoriesRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                .getReference("user_categories").child(uid);
+
+        userCategories = new ArrayList<>();
+        loadUserCategories();
 
         setupRecyclerView();
 
@@ -66,6 +81,33 @@ public class HomePage extends Menu {
         btnAddEvent.setOnClickListener(v -> showEventDialog(null));
     }
 
+    private void loadUserCategories() {
+        categoriesRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                userCategories.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Category category = ds.getValue(Category.class);
+                    if (category != null) {
+                        userCategories.add(category);
+                    }
+                }
+                if (userCategories.isEmpty()) {
+                    userCategories.add(new Category("default_1", "Work"));
+                    userCategories.add(new Category("default_2", "Personal"));
+                    userCategories.add(new Category("default_3", "Health"));
+                    userCategories.add(new Category("default_4", "Study"));
+                    userCategories.add(new Category("default_5", "Other"));
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(HomePage.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void setupRecyclerView() {
         eventList = new ArrayList<>();
         eventAdapter = new EventAdapter(eventList, new EventAdapter.OnEventClickListener() {
@@ -75,6 +117,9 @@ public class HomePage extends Menu {
             @Override
             public void onDeleteClick(Event event) {
                 if (event.getId() != null) {
+                    // Отменяем уведомление перед удалением
+                    NotificationHelper.cancelEventNotification(HomePage.this, event.getId());
+
                     eventsRef.child(event.getId()).removeValue();
                     loadEventsForDay(selectedDate);
                     Toast.makeText(HomePage.this, "Event deleted", Toast.LENGTH_SHORT).show();
@@ -89,7 +134,6 @@ public class HomePage extends Menu {
         recyclerEvents.setAdapter(eventAdapter);
     }
 
-    // Menu вызывает этот метод при изменениях в invites/<currentUserNumber>
     @Override
     protected void handleInvites(DataSnapshot snapshot) {
         for (DataSnapshot inviteSnap : snapshot.getChildren()) {
@@ -140,24 +184,27 @@ public class HomePage extends Menu {
                 .setMessage(fromName + " invited you to the event:\n\n" + eventTitle)
                 .setCancelable(false)
                 .setPositiveButton("Accept", (dialog, which) -> {
-                    // Add event to current user's events
                     String uid = currentUser.getUid();
                     DatabaseReference userEventsRef = com.google.firebase.database.FirebaseDatabase.getInstance()
                             .getReference("user_events").child(uid);
 
                     String newEventId = userEventsRef.push().getKey();
                     if (newEventId != null) {
+                        // При принятии приглашения включаем уведомления по умолчанию (true)
                         Event newEvent = new Event(
                                 newEventId,
                                 eventTitle,
                                 "Shared",
                                 System.currentTimeMillis(),
-                                System.currentTimeMillis() + 60 * 60 * 1000
+                                System.currentTimeMillis() + 60 * 60 * 1000,
+                                true // notificationEnabled
                         );
                         userEventsRef.child(newEventId).setValue(newEvent);
+
+                        // Планируем уведомление для принятого события
+                        scheduleNotificationIfNeeded(newEvent);
                     }
 
-                    // remove invite after accept
                     com.google.firebase.database.FirebaseDatabase.getInstance()
                             .getReference("invites")
                             .child(normalizedNumber)
@@ -168,7 +215,6 @@ public class HomePage extends Menu {
                     loadEventsForDay(selectedDate);
                 })
                 .setNegativeButton("Decline", (dialog, which) -> {
-                    // remove invite after decline
                     com.google.firebase.database.FirebaseDatabase.getInstance()
                             .getReference("invites")
                             .child(normalizedNumber)
@@ -182,6 +228,7 @@ public class HomePage extends Menu {
 
     private void showShareDialog(Event event) {
         Dialog dialog = new Dialog(this);
+        // Используем тему, если она настроена, или ручную прозрачность
         dialog.setContentView(R.layout.dialog_share_event);
         dialog.setCancelable(true);
         if (dialog.getWindow() != null)
@@ -229,7 +276,6 @@ public class HomePage extends Menu {
                     return;
                 }
 
-                // use normalizedPhone as invites path so receiver subscription matches
                 DatabaseReference invitesRef = com.google.firebase.database.FirebaseDatabase.getInstance()
                         .getReference("invites").child(normalizedPhone);
                 String inviteId = invitesRef.push().getKey();
@@ -274,9 +320,21 @@ public class HomePage extends Menu {
         Button btnPickStart = dialog.findViewById(R.id.btnPickStartTime);
         Button btnPickEnd = dialog.findViewById(R.id.btnPickEndTime);
         Button btnSave = dialog.findViewById(R.id.btnSaveEvent);
+        // Находим свитч для уведомлений
+        SwitchCompat switchNotification = dialog.findViewById(R.id.switchNotification);
 
-        String[] categories = {"Work", "Personal", "Health", "Study", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
+        // Создаем список названий категорий для Spinner
+        List<String> categoryNames = new ArrayList<>();
+        for (Category cat : userCategories) {
+            categoryNames.add(cat.getName());
+        }
+
+        if (categoryNames.isEmpty()) {
+            categoryNames.add("No categories");
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, categoryNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(adapter);
 
@@ -296,10 +354,26 @@ public class HomePage extends Menu {
 
         if (eventToEdit != null) {
             etTitle.setText(eventToEdit.getTitle());
-            spinnerCategory.setSelection(adapter.getPosition(eventToEdit.getDescription()));
+
+            int categoryIndex = -1;
+            for (int i = 0; i < categoryNames.size(); i++) {
+                if (categoryNames.get(i).equals(eventToEdit.getDescription())) {
+                    categoryIndex = i;
+                    break;
+                }
+            }
+            if (categoryIndex >= 0) {
+                spinnerCategory.setSelection(categoryIndex);
+            }
+
             startTime[0] = eventToEdit.getStartTime();
             endTime[0] = eventToEdit.getEndTime();
             eventId[0] = eventToEdit.getId();
+
+            // Устанавливаем состояние свитча при редактировании
+            if (switchNotification != null) {
+                switchNotification.setChecked(eventToEdit.isNotificationEnabled());
+            }
         }
 
         SimpleDateFormat sdfDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -312,20 +386,56 @@ public class HomePage extends Menu {
         btnSave.setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String category = spinnerCategory.getSelectedItem().toString();
+            boolean notificationEnabled = switchNotification != null && switchNotification.isChecked();
+
             if (title.isEmpty()) {
                 etTitle.setError("Enter title");
                 return;
             }
 
+            // === ПРОВЕРКА ВРЕМЕНИ ===
+            if (startTime[0] >= endTime[0]) {
+                Toast.makeText(this, "Error: Start time must be before end time", Toast.LENGTH_LONG).show();
+                // Можно также визуально подсветить текст с временем
+                tvTime.setTextColor(android.graphics.Color.RED);
+                return;
+            }
+            // ========================
+
             String id = (eventId[0] != null) ? eventId[0] : eventsRef.push().getKey();
-            Event event = new Event(id, title, category, startTime[0], endTime[0]);
-            if (id != null) eventsRef.child(id).setValue(event);
+
+            if (eventId[0] != null) {
+                NotificationHelper.cancelEventNotification(this, id);
+            }
+
+            Event event = new Event(id, title, category, startTime[0], endTime[0], notificationEnabled);
+
+            if (id != null) {
+                eventsRef.child(id).setValue(event);
+                scheduleNotificationIfNeeded(event);
+            }
 
             dialog.dismiss();
             loadEventsForDay(selectedDate);
         });
 
         dialog.show();
+    }
+
+    // Метод проверки и планирования уведомлений
+    private void scheduleNotificationIfNeeded(Event event) {
+        boolean globalEnabled = prefs.getBoolean("notifications_enabled", true);
+
+        if (globalEnabled && event.isNotificationEnabled()) {
+            if (event.getStartTime() > System.currentTimeMillis()) {
+                NotificationHelper.scheduleEventNotification(
+                        this,
+                        event.getId(),
+                        event.getTitle(),
+                        event.getStartTime()
+                );
+            }
+        }
     }
 
     private void pickTime(boolean isStart, long[] timeArray, TextView tvTime, long[] otherTime) {
@@ -351,6 +461,24 @@ public class HomePage extends Menu {
             cal.set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH));
 
             timeArray[0] = cal.getTimeInMillis();
+
+            // Логика авто-сдвига:
+            if (isStart) {
+                // Если время начала стало больше или равно времени конца
+                if (timeArray[0] >= otherTime[0]) {
+                    // Устанавливаем конец на 1 час позже начала
+                    otherTime[0] = timeArray[0] + (60 * 60 * 1000);
+                }
+            } else {
+                // Если пользователь выбрал конец раньше начала - предупреждаем сразу
+                if (timeArray[0] <= otherTime[0]) {
+                    Toast.makeText(this, "End time set before start time!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            // Сбрасываем красный цвет, если он был установлен при ошибке
+            tvTime.setTextColor(com.google.android.material.R.attr.colorOnSurface);
+
             updateTimeText(tvTime,
                     isStart ? timeArray[0] : otherTime[0],
                     isStart ? otherTime[0] : timeArray[0]);

@@ -51,14 +51,21 @@ public class Menu extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
+                if (!(this instanceof HomePage)) {
+                    startActivity(new Intent(this, HomePage.class));
+                }
                 drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_category) {
-                startActivity(new Intent(this, CategoryPage.class));
+                if (!(this instanceof CategoryPage)) {
+                    startActivity(new Intent(this, CategoryPage.class));
+                }
                 drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_settings) {
-                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
+                if (!(this instanceof SettingsPage)) {
+                    startActivity(new Intent(this, SettingsPage.class));
+                }
                 drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_logout) {
