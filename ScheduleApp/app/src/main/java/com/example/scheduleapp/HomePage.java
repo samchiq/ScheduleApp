@@ -2,12 +2,11 @@ package com.example.scheduleapp;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.SharedPreferences; // Добавлено
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SwitchCompat; // Добавлено
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,12 +25,9 @@ public class HomePage extends Menu {
     private FloatingActionButton btnAddEvent;
     private long selectedDate;
     private DatabaseReference eventsRef;
-    private DatabaseReference categoriesRef;
     private RecyclerView recyclerEvents;
     private List<Event> eventList;
     private EventAdapter eventAdapter;
-    private List<Category> userCategories;
-    private SharedPreferences prefs; // Добавлено
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +35,6 @@ public class HomePage extends Menu {
         setContentView(R.layout.home_page);
 
         setupMenu();
-
-        // Инициализация SharedPreferences
-        prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-
-        // Создаем канал уведомлений (для Android 8.0+)
-        NotificationHelper.createNotificationChannel(this);
-
 
         calendarView = findViewById(R.id.calendarView);
         btnAddEvent = findViewById(R.id.btnAddEvent);
@@ -60,11 +49,6 @@ public class HomePage extends Menu {
         String uid = currentUser.getUid();
         eventsRef = com.google.firebase.database.FirebaseDatabase.getInstance()
                 .getReference("user_events").child(uid);
-        categoriesRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                .getReference("user_categories").child(uid);
-
-        userCategories = new ArrayList<>();
-        loadUserCategories();
 
         setupRecyclerView();
 
@@ -81,45 +65,17 @@ public class HomePage extends Menu {
         btnAddEvent.setOnClickListener(v -> showEventDialog(null));
     }
 
-    private void loadUserCategories() {
-        categoriesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userCategories.clear();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    Category category = ds.getValue(Category.class);
-                    if (category != null) {
-                        userCategories.add(category);
-                    }
-                }
-                if (userCategories.isEmpty()) {
-                    userCategories.add(new Category("default_1", "Work"));
-                    userCategories.add(new Category("default_2", "Personal"));
-                    userCategories.add(new Category("default_3", "Health"));
-                    userCategories.add(new Category("default_4", "Study"));
-                    userCategories.add(new Category("default_5", "Other"));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(HomePage.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     private void setupRecyclerView() {
         eventList = new ArrayList<>();
         eventAdapter = new EventAdapter(eventList, new EventAdapter.OnEventClickListener() {
             @Override
-            public void onEditClick(Event event) { showEventDialog(event); }
+            public void onEditClick(Event event) {
+                showEventDialog(event);
+            }
 
             @Override
             public void onDeleteClick(Event event) {
                 if (event.getId() != null) {
-                    // Отменяем уведомление перед удалением
-                    NotificationHelper.cancelEventNotification(HomePage.this, event.getId());
-
                     eventsRef.child(event.getId()).removeValue();
                     loadEventsForDay(selectedDate);
                     Toast.makeText(HomePage.this, "Event deleted", Toast.LENGTH_SHORT).show();
@@ -127,11 +83,140 @@ public class HomePage extends Menu {
             }
 
             @Override
-            public void onShareClick(Event event) { showShareDialog(event); }
+            public void onShareClick(Event event) {
+                showShareDialog(event);
+            }
+
+            @Override
+            public void onLocationClick(Event event) {
+                showLocationDialog(event);
+            }
         }, this);
 
         recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerEvents.setAdapter(eventAdapter);
+    }
+
+    // НОВЫЙ МЕТОД: Диалог добавления/редактирования локации
+    private void showLocationDialog(Event event) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_add_location);
+        dialog.setCancelable(true);
+
+        if (dialog.getWindow() != null)
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        EditText etSearch = dialog.findViewById(R.id.etLocationSearch);
+        Button btnSearch = dialog.findViewById(R.id.btnSearchLocation);
+        TextView tvFoundAddress = dialog.findViewById(R.id.tvFoundAddress);
+        TextView tvCoordinates = dialog.findViewById(R.id.tvCoordinates);
+        LinearLayout layoutSearchResult = dialog.findViewById(R.id.layoutSearchResult);
+        LinearLayout layoutCoordinates = dialog.findViewById(R.id.layoutCoordinates);
+        ProgressBar progressBar = dialog.findViewById(R.id.progressBar);
+        Button btnSave = dialog.findViewById(R.id.btnSaveLocation);
+        Button btnCancel = dialog.findViewById(R.id.btnCancelLocation);
+
+        final Location.LocationResult[] selectedLocation = {null};
+
+        // Если у события уже есть локация, показываем её
+        if (event.hasLocation()) {
+            etSearch.setText(event.getLocationAddress());
+            tvFoundAddress.setText(event.getLocationAddress());
+            tvCoordinates.setText(String.format(Locale.getDefault(), "%.4f, %.4f",
+                    event.getLatitude(), event.getLongitude()));
+            layoutSearchResult.setVisibility(View.VISIBLE);
+            layoutCoordinates.setVisibility(View.VISIBLE);
+            btnSave.setEnabled(true);
+            selectedLocation[0] = new Location.LocationResult(
+                    event.getLocationAddress(),
+                    event.getLatitude(),
+                    event.getLongitude()
+            );
+        }
+
+        // Обработка нажатия Enter в поле ввода
+        etSearch.setOnEditorActionListener((v, actionId, keyEvent) -> {
+            btnSearch.performClick();
+            return true;
+        });
+
+        // Кнопка поиска
+        btnSearch.setOnClickListener(v -> {
+            String query = etSearch.getText().toString().trim();
+            if (query.isEmpty()) {
+                etSearch.setError("Enter location");
+                return;
+            }
+
+            // Скрыть клавиатуру
+            etSearch.clearFocus();
+
+            // Показать прогресс
+            progressBar.setVisibility(View.VISIBLE);
+            layoutSearchResult.setVisibility(View.GONE);
+            btnSave.setEnabled(false);
+
+            // Поиск в фоновом потоке
+            new Thread(() -> {
+                // Добавляем небольшую задержку для соблюдения лимита Nominatim (1 req/sec)
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Location.LocationResult result =
+                        Location.searchLocation(query);
+
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+
+                    if (result != null) {
+                        selectedLocation[0] = result;
+                        tvFoundAddress.setText(result.fullAddress);
+                        tvCoordinates.setText(String.format(Locale.getDefault(),
+                                "%.4f, %.4f", result.latitude, result.longitude));
+                        layoutSearchResult.setVisibility(View.VISIBLE);
+                        layoutCoordinates.setVisibility(View.VISIBLE);
+                        btnSave.setEnabled(true);
+                    } else {
+                        layoutSearchResult.setVisibility(View.VISIBLE);
+                        tvFoundAddress.setText("Location not found. Try a different search.");
+                        layoutCoordinates.setVisibility(View.GONE);
+                        btnSave.setEnabled(false);
+                    }
+                });
+            }).start();
+        });
+
+        // Кнопка сохранения
+        btnSave.setOnClickListener(v -> {
+            if (selectedLocation[0] != null) {
+                // Обновляем событие
+                event.setLocationAddress(selectedLocation[0].fullAddress);
+                event.setLatitude(selectedLocation[0].latitude);
+                event.setLongitude(selectedLocation[0].longitude);
+
+                // Сохраняем в Firebase
+                if (event.getId() != null) {
+                    eventsRef.child(event.getId()).setValue(event)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(HomePage.this, "Location saved", Toast.LENGTH_SHORT).show();
+                                loadEventsForDay(selectedDate);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(HomePage.this, "Failed to save location", Toast.LENGTH_SHORT).show();
+                            });
+                }
+
+                dialog.dismiss();
+            }
+        });
+
+        // Кнопка отмены
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     @Override
@@ -190,19 +275,14 @@ public class HomePage extends Menu {
 
                     String newEventId = userEventsRef.push().getKey();
                     if (newEventId != null) {
-                        // При принятии приглашения включаем уведомления по умолчанию (true)
                         Event newEvent = new Event(
                                 newEventId,
                                 eventTitle,
                                 "Shared",
                                 System.currentTimeMillis(),
-                                System.currentTimeMillis() + 60 * 60 * 1000,
-                                true // notificationEnabled
+                                System.currentTimeMillis() + 60 * 60 * 1000
                         );
                         userEventsRef.child(newEventId).setValue(newEvent);
-
-                        // Планируем уведомление для принятого события
-                        scheduleNotificationIfNeeded(newEvent);
                     }
 
                     com.google.firebase.database.FirebaseDatabase.getInstance()
@@ -228,7 +308,6 @@ public class HomePage extends Menu {
 
     private void showShareDialog(Event event) {
         Dialog dialog = new Dialog(this);
-        // Используем тему, если она настроена, или ручную прозрачность
         dialog.setContentView(R.layout.dialog_share_event);
         dialog.setCancelable(true);
         if (dialog.getWindow() != null)
@@ -320,21 +399,9 @@ public class HomePage extends Menu {
         Button btnPickStart = dialog.findViewById(R.id.btnPickStartTime);
         Button btnPickEnd = dialog.findViewById(R.id.btnPickEndTime);
         Button btnSave = dialog.findViewById(R.id.btnSaveEvent);
-        // Находим свитч для уведомлений
-        SwitchCompat switchNotification = dialog.findViewById(R.id.switchNotification);
 
-        // Создаем список названий категорий для Spinner
-        List<String> categoryNames = new ArrayList<>();
-        for (Category cat : userCategories) {
-            categoryNames.add(cat.getName());
-        }
-
-        if (categoryNames.isEmpty()) {
-            categoryNames.add("No categories");
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, categoryNames);
+        String[] categories = {"Work", "Personal", "Health", "Study", "Other"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(adapter);
 
@@ -354,26 +421,10 @@ public class HomePage extends Menu {
 
         if (eventToEdit != null) {
             etTitle.setText(eventToEdit.getTitle());
-
-            int categoryIndex = -1;
-            for (int i = 0; i < categoryNames.size(); i++) {
-                if (categoryNames.get(i).equals(eventToEdit.getDescription())) {
-                    categoryIndex = i;
-                    break;
-                }
-            }
-            if (categoryIndex >= 0) {
-                spinnerCategory.setSelection(categoryIndex);
-            }
-
+            spinnerCategory.setSelection(adapter.getPosition(eventToEdit.getDescription()));
             startTime[0] = eventToEdit.getStartTime();
             endTime[0] = eventToEdit.getEndTime();
             eventId[0] = eventToEdit.getId();
-
-            // Устанавливаем состояние свитча при редактировании
-            if (switchNotification != null) {
-                switchNotification.setChecked(eventToEdit.isNotificationEnabled());
-            }
         }
 
         SimpleDateFormat sdfDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -386,56 +437,28 @@ public class HomePage extends Menu {
         btnSave.setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String category = spinnerCategory.getSelectedItem().toString();
-            boolean notificationEnabled = switchNotification != null && switchNotification.isChecked();
-
             if (title.isEmpty()) {
                 etTitle.setError("Enter title");
                 return;
             }
 
-            // === ПРОВЕРКА ВРЕМЕНИ ===
-            if (startTime[0] >= endTime[0]) {
-                Toast.makeText(this, "Error: Start time must be before end time", Toast.LENGTH_LONG).show();
-                // Можно также визуально подсветить текст с временем
-                tvTime.setTextColor(android.graphics.Color.RED);
-                return;
-            }
-            // ========================
-
             String id = (eventId[0] != null) ? eventId[0] : eventsRef.push().getKey();
+            Event event = new Event(id, title, category, startTime[0], endTime[0]);
 
-            if (eventId[0] != null) {
-                NotificationHelper.cancelEventNotification(this, id);
+            // Если редактируем существующее событие с локацией, сохраняем локацию
+            if (eventToEdit != null && eventToEdit.hasLocation()) {
+                event.setLocationAddress(eventToEdit.getLocationAddress());
+                event.setLatitude(eventToEdit.getLatitude());
+                event.setLongitude(eventToEdit.getLongitude());
             }
 
-            Event event = new Event(id, title, category, startTime[0], endTime[0], notificationEnabled);
-
-            if (id != null) {
-                eventsRef.child(id).setValue(event);
-                scheduleNotificationIfNeeded(event);
-            }
+            if (id != null) eventsRef.child(id).setValue(event);
 
             dialog.dismiss();
             loadEventsForDay(selectedDate);
         });
 
         dialog.show();
-    }
-
-    // Метод проверки и планирования уведомлений
-    private void scheduleNotificationIfNeeded(Event event) {
-        boolean globalEnabled = prefs.getBoolean("notifications_enabled", true);
-
-        if (globalEnabled && event.isNotificationEnabled()) {
-            if (event.getStartTime() > System.currentTimeMillis()) {
-                NotificationHelper.scheduleEventNotification(
-                        this,
-                        event.getId(),
-                        event.getTitle(),
-                        event.getStartTime()
-                );
-            }
-        }
     }
 
     private void pickTime(boolean isStart, long[] timeArray, TextView tvTime, long[] otherTime) {
@@ -461,24 +484,6 @@ public class HomePage extends Menu {
             cal.set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH));
 
             timeArray[0] = cal.getTimeInMillis();
-
-            // Логика авто-сдвига:
-            if (isStart) {
-                // Если время начала стало больше или равно времени конца
-                if (timeArray[0] >= otherTime[0]) {
-                    // Устанавливаем конец на 1 час позже начала
-                    otherTime[0] = timeArray[0] + (60 * 60 * 1000);
-                }
-            } else {
-                // Если пользователь выбрал конец раньше начала - предупреждаем сразу
-                if (timeArray[0] <= otherTime[0]) {
-                    Toast.makeText(this, "End time set before start time!", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            // Сбрасываем красный цвет, если он был установлен при ошибке
-            tvTime.setTextColor(com.google.android.material.R.attr.colorOnSurface);
-
             updateTimeText(tvTime,
                     isStart ? timeArray[0] : otherTime[0],
                     isStart ? otherTime[0] : timeArray[0]);

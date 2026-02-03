@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_dialog_rounded">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Location"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search for a place or address"
+        android:textSize="14sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="12dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter location"
+        app:boxBackgroundColor="?attr/colorSurface"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxStrokeColor="?attr/colorOutline"
+        app:boxStrokeWidth="1dp"
+        app:hintTextColor="?attr/colorPrimary"
+        app:endIconMode="clear_text"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etLocationSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="?attr/colorOnSurface"
+            android:imeOptions="actionSearch"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btnSearchLocation"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Search"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnPrimary"
+        android:background="@drawable/bg_button_primary"
+        app:backgroundTint="@null"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Контейнер для результатов поиска -->
+    <LinearLayout
+        android:id="@+id/layoutSearchResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_card_outlined"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Found Location:"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvFoundAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No location selected"
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"
+            android:maxLines="3"
+            android:ellipsize="end"/>
+
+        <LinearLayout
+            android:id="@+id/layoutCoordinates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📍 "
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/tvCoordinates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.0, 0.0"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Прогресс бар -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginVertical="20dp"/>
+
+    <!-- Кнопки действий -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btnCancelLocation"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="Cancel"
+            android:textColor="?attr/colorPrimary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:paddingHorizontal="4dp"
+            app:autoSizeTextType="uniform"
+            app:backgroundTint="@null" />
+
+        <Button
+            android:id="@+id/btnSaveLocation"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="Save"
+            android:textColor="?attr/colorOnPrimary"
+            android:background="@drawable/bg_button_primary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:autoSizeTextType="uniform"
+            app:backgroundTint="@null"
+            android:enabled="false"/>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- ВАЖНО: Разрешение для использования интернета (для Nominatim API) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -15,28 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ScheduleApp"
         tools:targetApi="31">
-        <!-- Добавьте SettingsPage activity -->
+
+        <!-- Activities -->
         <activity
-            android:name=".SettingsPage"
-            android:exported="false"
-            android:theme="@style/Theme.ScheduleApp" />
-
-        <!-- Добавьте BroadcastReceiver для уведомлений -->
-        <receiver
-            android:name=".EventNotificationReceiver"
-            android:enabled="true"
-            android:exported="false" />
-
-        <!-- Categories page -->
-        <activity android:name=".CategoryPage"/>
-
-        <!-- Home page -->
-        <activity android:name=".HomePage"
-            android:exported="true">
-        </activity>
-
-        <!-- Main launcher activity -->
-        <activity android:name=".MainActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,8 +27,24 @@
             </intent-filter>
         </activity>
 
-        <!-- Music service -->
-        <service android:name=".MusicService"/>
+        <activity
+            android:name=".SettingsPage"
+            android:exported="false"
+            android:theme="@style/Theme.ScheduleApp" />
+
+        <activity
+            android:name=".HomePage"
+            android:exported="false" />
+
+        <activity
+            android:name=".CategoryPage"
+            android:exported="false" />
+
+        <!-- Music Service -->
+        <service
+            android:name=".MusicService"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 
