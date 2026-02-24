@@ -2,6 +2,8 @@ package com.example.scheduleapp;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
@@ -89,7 +91,13 @@ public class HomePage extends Menu {
 
             @Override
             public void onLocationClick(Event event) {
-                showLocationDialog(event);
+                // Если у события уже есть локация - показываем спиннер с выбором
+                if (event.hasLocation()) {
+                    showLocationSpinner(event);
+                } else {
+                    // Если локации нет - сразу открываем диалог добавления
+                    showLocationDialog(event);
+                }
             }
         }, this);
 
@@ -97,7 +105,69 @@ public class HomePage extends Menu {
         recyclerEvents.setAdapter(eventAdapter);
     }
 
-    // НОВЫЙ МЕТОД: Диалог добавления/редактирования локации
+    // Метод со спиннером для выбора действия с локацией
+    private void showLocationSpinner(Event event) {
+        // Создаем AlertDialog со спиннером
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Location: " + event.getLocationAddress());
+
+        // Опции для спиннера
+        String[] options = {"Open Location", "Change Location"};
+
+        // Создаем спиннер
+        Spinner spinner = new Spinner(this);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, options);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setPadding(50, 40, 50, 40);
+
+        builder.setView(spinner);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            int selectedPosition = spinner.getSelectedItemPosition();
+            if (selectedPosition == 0) {
+                // Open Location
+                openLocationInMaps(event);
+            } else if (selectedPosition == 1) {
+                // Change Location
+                showLocationDialog(event);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+
+    // Метод для открытия локации в Google Maps
+    private void openLocationInMaps(Event event) {
+        if (!event.hasLocation()) return;
+
+        try {
+            // Создаем URI для Google Maps с координатами и меткой
+            String label = Uri.encode(event.getTitle());
+            String uriString = "geo:" + event.getLatitude() + "," + event.getLongitude()
+                    + "?q=" + event.getLatitude() + "," + event.getLongitude()
+                    + "(" + label + ")";
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));
+            intent.setPackage("com.google.android.apps.maps"); // Попытка открыть Google Maps
+
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                // Если Google Maps нет, открываем в браузере или других картах
+                intent.setPackage(null);
+                startActivity(intent);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to open maps", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Диалог добавления/редактирования локации
     private void showLocationDialog(Event event) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_location);

@@ -19,7 +19,6 @@ import java.util.Locale;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
-    // Интерфейс с 4 колбэками: Edit / Delete / Share / Location
     public interface OnEventClickListener {
         void onEditClick(Event event);
         void onDeleteClick(Event event);
@@ -73,21 +72,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             if (listener != null) listener.onShareClick(event);
         });
 
-        // Кнопка локации
+        // Кнопка локации - всегда вызываем listener
         holder.btnLocation.setOnClickListener(v -> {
-            if (event.hasLocation()) {
-                // Если локация уже есть - открываем в картах
-                openLocationInMaps(event);
-            } else {
-                // Если локации нет - открываем диалог добавления
-                if (listener != null) listener.onLocationClick(event);
-            }
+            if (listener != null) listener.onLocationClick(event);
         });
 
         // Меняем цвет иконки локации в зависимости от наличия адреса
         if (event.hasLocation()) {
             holder.btnLocation.setImageResource(R.drawable.ic_location);
-            // Цвет индиго для заполненной локации (можно поменять на любой)
+            // Цвет индиго для заполненной локации
         } else {
             holder.btnLocation.setImageResource(R.drawable.ic_location);
             // Серый цвет для пустой локации
