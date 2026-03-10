@@ -91,11 +91,11 @@ public class HomePage extends Menu {
 
             @Override
             public void onLocationClick(Event event) {
-                // Если у события уже есть локация - показываем спиннер с выбором
+  
                 if (event.hasLocation()) {
                     showLocationSpinner(event);
                 } else {
-                    // Если локации нет - сразу открываем диалог добавления
+  
                     showLocationDialog(event);
                 }
             }
@@ -104,17 +104,14 @@ public class HomePage extends Menu {
         recyclerEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerEvents.setAdapter(eventAdapter);
     }
-
-    // Метод со спиннером для выбора действия с локацией
+  
     private void showLocationSpinner(Event event) {
-        // Создаем AlertDialog со спиннером
+  
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Location: " + event.getLocationAddress());
-
-        // Опции для спиннера
+  
         String[] options = {"Open Location", "Change Location"};
-
-        // Создаем спиннер
+  
         Spinner spinner = new Spinner(this);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, options);
@@ -127,10 +124,10 @@ public class HomePage extends Menu {
         builder.setPositiveButton("OK", (dialog, which) -> {
             int selectedPosition = spinner.getSelectedItemPosition();
             if (selectedPosition == 0) {
-                // Open Location
+  
                 openLocationInMaps(event);
             } else if (selectedPosition == 1) {
-                // Change Location
+  
                 showLocationDialog(event);
             }
         });
@@ -139,25 +136,24 @@ public class HomePage extends Menu {
 
         builder.show();
     }
-
-    // Метод для открытия локации в Google Maps
+  
     private void openLocationInMaps(Event event) {
         if (!event.hasLocation()) return;
 
         try {
-            // Создаем URI для Google Maps с координатами и меткой
+  
             String label = Uri.encode(event.getTitle());
             String uriString = "geo:" + event.getLatitude() + "," + event.getLongitude()
                     + "?q=" + event.getLatitude() + "," + event.getLongitude()
                     + "(" + label + ")";
 
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));
-            intent.setPackage("com.google.android.apps.maps"); // Попытка открыть Google Maps
+            intent.setPackage("com.google.android.apps.maps"); 
 
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivity(intent);
             } else {
-                // Если Google Maps нет, открываем в браузере или других картах
+  
                 intent.setPackage(null);
                 startActivity(intent);
             }
@@ -166,8 +162,7 @@ public class HomePage extends Menu {
             Toast.makeText(this, "Failed to open maps", Toast.LENGTH_SHORT).show();
         }
     }
-
-    // Диалог добавления/редактирования локации
+  
     private void showLocationDialog(Event event) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_location);
@@ -187,8 +182,7 @@ public class HomePage extends Menu {
         Button btnCancel = dialog.findViewById(R.id.btnCancelLocation);
 
         final Location.LocationResult[] selectedLocation = {null};
-
-        // Если у события уже есть локация, показываем её
+  
         if (event.hasLocation()) {
             etSearch.setText(event.getLocationAddress());
             tvFoundAddress.setText(event.getLocationAddress());
@@ -203,32 +197,27 @@ public class HomePage extends Menu {
                     event.getLongitude()
             );
         }
-
-        // Обработка нажатия Enter в поле ввода
+  
         etSearch.setOnEditorActionListener((v, actionId, keyEvent) -> {
             btnSearch.performClick();
             return true;
         });
-
-        // Кнопка поиска
+  
         btnSearch.setOnClickListener(v -> {
             String query = etSearch.getText().toString().trim();
             if (query.isEmpty()) {
                 etSearch.setError("Enter location");
                 return;
             }
-
-            // Скрыть клавиатуру
+  
             etSearch.clearFocus();
-
-            // Показать прогресс
+  
             progressBar.setVisibility(View.VISIBLE);
             layoutSearchResult.setVisibility(View.GONE);
             btnSave.setEnabled(false);
-
-            // Поиск в фоновом потоке
+  
             new Thread(() -> {
-                // Добавляем небольшую задержку для соблюдения лимита Nominatim (1 req/sec)
+  
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -258,16 +247,14 @@ public class HomePage extends Menu {
                 });
             }).start();
         });
-
-        // Кнопка сохранения
+  
         btnSave.setOnClickListener(v -> {
             if (selectedLocation[0] != null) {
-                // Обновляем событие
+  
                 event.setLocationAddress(selectedLocation[0].fullAddress);
                 event.setLatitude(selectedLocation[0].latitude);
                 event.setLongitude(selectedLocation[0].longitude);
-
-                // Сохраняем в Firebase
+  
                 if (event.getId() != null) {
                     eventsRef.child(event.getId()).setValue(event)
                             .addOnSuccessListener(aVoid -> {
@@ -282,8 +269,7 @@ public class HomePage extends Menu {
                 dialog.dismiss();
             }
         });
-
-        // Кнопка отмены
+  
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
@@ -470,11 +456,6 @@ public class HomePage extends Menu {
         Button btnPickEnd = dialog.findViewById(R.id.btnPickEndTime);
         Button btnSave = dialog.findViewById(R.id.btnSaveEvent);
 
-        String[] categories = {"Work", "Personal", "Health", "Study", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategory.setAdapter(adapter);
-
         Calendar calStart = Calendar.getInstance();
         calStart.setTimeInMillis(selectedDate);
         calStart.set(Calendar.HOUR_OF_DAY, 9);
@@ -486,27 +467,64 @@ public class HomePage extends Menu {
         calEnd.set(Calendar.MINUTE, 0);
 
         final long[] startTime = { calStart.getTimeInMillis() };
-        final long[] endTime = { calEnd.getTimeInMillis() };
-        final String[] eventId = {null};
-
-        if (eventToEdit != null) {
-            etTitle.setText(eventToEdit.getTitle());
-            spinnerCategory.setSelection(adapter.getPosition(eventToEdit.getDescription()));
-            startTime[0] = eventToEdit.getStartTime();
-            endTime[0] = eventToEdit.getEndTime();
-            eventId[0] = eventToEdit.getId();
-        }
+        final long[] endTime   = { calEnd.getTimeInMillis() };
+        final String[] eventId = { null };
 
         SimpleDateFormat sdfDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         tvDate.setText("Selected date: " + sdfDate.format(new Date(selectedDate)));
         updateTimeText(tvTime, startTime[0], endTime[0]);
 
-        btnPickStart.setOnClickListener(v -> pickTime(true, startTime, tvTime, endTime));
-        btnPickEnd.setOnClickListener(v -> pickTime(false, endTime, tvTime, startTime));
+        btnPickStart.setOnClickListener(v -> pickTime(true,  startTime, tvTime, endTime));
+        btnPickEnd.setOnClickListener(v   -> pickTime(false, endTime,   tvTime, startTime));
+  
+        String uid = currentUser.getUid();
+        com.google.firebase.database.FirebaseDatabase.getInstance()
+                .getReference("user_categories").child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<String> categoryNames = new ArrayList<>();
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            Category cat = ds.getValue(Category.class);
+                            if (cat != null && cat.getName() != null) {
+                                categoryNames.add(cat.getName());
+                            }
+                        }
+  
+                        if (categoryNames.isEmpty()) {
+                            categoryNames.add("General");
+                        }
+
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                HomePage.this,
+                                android.R.layout.simple_spinner_item,
+                                categoryNames
+                        );
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerCategory.setAdapter(adapter);
+  
+                        if (eventToEdit != null) {
+                            etTitle.setText(eventToEdit.getTitle());
+                            int pos = adapter.getPosition(eventToEdit.getDescription());
+                            if (pos >= 0) spinnerCategory.setSelection(pos);
+                            startTime[0] = eventToEdit.getStartTime();
+                            endTime[0]   = eventToEdit.getEndTime();
+                            eventId[0]   = eventToEdit.getId();
+                            updateTimeText(tvTime, startTime[0], endTime[0]);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(HomePage.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         btnSave.setOnClickListener(v -> {
-            String title = etTitle.getText().toString().trim();
-            String category = spinnerCategory.getSelectedItem().toString();
+            String title    = etTitle.getText().toString().trim();
+            Object selected = spinnerCategory.getSelectedItem();
+            String category = selected != null ? selected.toString() : "General";
+
             if (title.isEmpty()) {
                 etTitle.setError("Enter title");
                 return;
@@ -515,7 +533,6 @@ public class HomePage extends Menu {
             String id = (eventId[0] != null) ? eventId[0] : eventsRef.push().getKey();
             Event event = new Event(id, title, category, startTime[0], endTime[0]);
 
-            // Если редактируем существующее событие с локацией, сохраняем локацию
             if (eventToEdit != null && eventToEdit.hasLocation()) {
                 event.setLocationAddress(eventToEdit.getLocationAddress());
                 event.setLatitude(eventToEdit.getLatitude());
@@ -530,7 +547,6 @@ public class HomePage extends Menu {
 
         dialog.show();
     }
-
     private void pickTime(boolean isStart, long[] timeArray, TextView tvTime, long[] otherTime) {
         com.google.android.material.timepicker.MaterialTimePicker picker =
                 new com.google.android.material.timepicker.MaterialTimePicker.Builder()

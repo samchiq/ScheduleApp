@@ -13,11 +13,7 @@ public class Location {
     private static final String BASE_URL = "https://nominatim.openstreetmap.org";
     private static final String USER_AGENT = "ScheduleApp/1.0";
 
-    /**
-     * Поиск локации по текстовому запросу (адрес, название места)
-     * @param query Строка поиска (например, "Haifa, Israel" или "Central Station Tel Aviv")
-     * @return LocationResult с адресом и координатами, или null если не найдено
-     */
+     
     public static LocationResult searchLocation(String query) {
         if (query == null || query.trim().isEmpty()) {
             return null;
@@ -32,7 +28,7 @@ public class Location {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("User-Agent", USER_AGENT);
-            conn.setConnectTimeout(10000); // 10 секунд
+            conn.setConnectTimeout(10000); 
             conn.setReadTimeout(10000);
 
             int responseCode = conn.getResponseCode();
@@ -50,8 +46,7 @@ public class Location {
             }
             reader.close();
             conn.disconnect();
-
-            // Парсинг JSON ответа
+  
             JSONArray jsonArray = new JSONArray(response.toString());
             if (jsonArray.length() > 0) {
                 JSONObject place = jsonArray.getJSONObject(0);
@@ -59,8 +54,7 @@ public class Location {
                 String displayName = place.getString("display_name");
                 double lat = place.getDouble("lat");
                 double lon = place.getDouble("lon");
-
-                // Извлекаем детали адреса если есть
+  
                 String city = "";
                 String country = "";
 
@@ -81,12 +75,7 @@ public class Location {
         return null;
     }
 
-    /**
-     * Обратное геокодирование - получение адреса по координатам
-     * @param lat Широта
-     * @param lon Долгота
-     * @return LocationResult с адресом, или null если не найдено
-     */
+
     public static LocationResult reverseGeocode(double lat, double lon) {
         try {
             String urlString = BASE_URL + "/reverse?lat=" + lat
@@ -137,9 +126,7 @@ public class Location {
         return null;
     }
 
-    /**
-     * Класс для хранения результата геокодирования
-     */
+     
     public static class LocationResult {
         public String fullAddress;
         public double latitude;

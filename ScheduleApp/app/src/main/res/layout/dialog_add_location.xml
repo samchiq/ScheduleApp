@@ -59,8 +59,7 @@
         app:backgroundTint="@null"
         android:layout_marginBottom="20dp"/>
 
-    <!-- Контейнер для результатов поиска -->
-    <LinearLayout
+     <LinearLayout
         android:id="@+id/layoutSearchResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -113,8 +112,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Прогресс бар -->
-    <ProgressBar
+     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -122,8 +120,7 @@
         android:visibility="gone"
         android:layout_marginVertical="20dp"/>
 
-    <!-- Кнопки действий -->
-    <LinearLayout
+     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

@@ -28,8 +28,7 @@ public class CategoryPage extends Menu {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.category_page);
-
-        // Настройка меню
+  
         setupMenu();
 
         recyclerCategories = findViewById(R.id.recyclerCategories);

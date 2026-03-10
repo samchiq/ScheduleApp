@@ -142,7 +142,7 @@ public class Menu extends AppCompatActivity {
     }
 
     protected void handleInvites(DataSnapshot snapshot) {
-        // Можно переопределить в наследниках, например в HomePage
+  
     }
 
     @Override

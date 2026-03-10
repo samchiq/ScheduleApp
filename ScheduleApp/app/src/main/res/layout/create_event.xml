@@ -96,8 +96,7 @@
             android:background="@drawable/bg_button_secondary"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Notification Toggle -->
-        <androidx.cardview.widget.CardView
+         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="12dp"

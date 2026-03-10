@@ -4,8 +4,7 @@
 
     <solid android:color="@android:color/transparent" />
 
-    <!-- Цвет рамки по теме -->
-    <stroke
+     <stroke
         android:width="2dp"
         android:color="?attr/colorPrimary" />
 

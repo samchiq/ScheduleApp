@@ -56,34 +56,29 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.tvTitle.setText(event.getTitle());
         holder.tvTime.setText(timeRange);
         holder.tvCategory.setText("Category: " + event.getDescription());
-
-        // Кнопка редактирования
+  
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditClick(event);
         });
-
-        // Кнопка удаления
+  
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) listener.onDeleteClick(event);
         });
-
-        // Кнопка шаринга
+  
         holder.btnShare.setOnClickListener(v -> {
             if (listener != null) listener.onShareClick(event);
         });
-
-        // Кнопка локации - всегда вызываем listener
+  
         holder.btnLocation.setOnClickListener(v -> {
             if (listener != null) listener.onLocationClick(event);
         });
-
-        // Меняем цвет иконки локации в зависимости от наличия адреса
+  
         if (event.hasLocation()) {
             holder.btnLocation.setImageResource(R.drawable.ic_location);
-            // Цвет индиго для заполненной локации
+  
         } else {
             holder.btnLocation.setImageResource(R.drawable.ic_location);
-            // Серый цвет для пустой локации
+  
         }
     }
 
@@ -91,25 +86,24 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public int getItemCount() {
         return events == null ? 0 : events.size();
     }
-
-    // Открыть локацию в Google Maps или других картах
+  
     private void openLocationInMaps(Event event) {
         if (!event.hasLocation()) return;
 
         try {
-            // Создаем URI для Google Maps с координатами и меткой
+  
             String label = Uri.encode(event.getTitle());
             String uriString = "geo:" + event.getLatitude() + "," + event.getLongitude()
                     + "?q=" + event.getLatitude() + "," + event.getLongitude()
                     + "(" + label + ")";
 
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriString));
-            intent.setPackage("com.google.android.apps.maps"); // Попытка открыть Google Maps
+            intent.setPackage("com.google.android.apps.maps"); 
 
             if (intent.resolveActivity(context.getPackageManager()) != null) {
                 context.startActivity(intent);
             } else {
-                // Если Google Maps нет, открываем в браузере или других картах
+  
                 intent.setPackage(null);
                 context.startActivity(intent);
             }

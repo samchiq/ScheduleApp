@@ -2,9 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ВАЖНО: Разрешение для использования интернета (для Nominatim API) -->
-    <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -17,8 +18,7 @@
         android:theme="@style/Theme.ScheduleApp"
         tools:targetApi="31">
 
-        <!-- Activities -->
-        <activity
+         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -39,13 +39,6 @@
         <activity
             android:name=".CategoryPage"
             android:exported="false" />
-
-        <!-- Music Service -->
-        <service
-            android:name=".MusicService"
-            android:enabled="true"
-            android:exported="false" />
-
     </application>
 
 </manifest>

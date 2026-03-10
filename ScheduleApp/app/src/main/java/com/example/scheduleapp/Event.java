@@ -6,8 +6,7 @@ public class Event {
     private String description;
     private long startTime;
     private long endTime;
-
-    // Новые поля для локации
+  
     private String locationAddress;
     private double latitude;
     private double longitude;
@@ -24,8 +23,7 @@ public class Event {
         this.latitude = 0.0;
         this.longitude = 0.0;
     }
-
-    // Конструктор с локацией
+  
     public Event(String id, String title, String description, long startTime, long endTime,
                  String locationAddress, double latitude, double longitude) {
         this.id = id;
@@ -37,8 +35,7 @@ public class Event {
         this.latitude = latitude;
         this.longitude = longitude;
     }
-
-    // Геттеры
+  
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
@@ -47,8 +44,7 @@ public class Event {
     public String getLocationAddress() { return locationAddress != null ? locationAddress : ""; }
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
-
-    // Сеттеры
+  
     public void setId(String id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
@@ -57,8 +53,7 @@ public class Event {
     public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
     public void setLatitude(double latitude) { this.latitude = latitude; }
     public void setLongitude(double longitude) { this.longitude = longitude; }
-
-    // Проверка наличия локации
+  
     public boolean hasLocation() {
         return locationAddress != null && !locationAddress.isEmpty();
     }

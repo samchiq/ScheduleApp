@@ -13,8 +13,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-        <!-- Название категории, по центру вертикально -->
-        <TextView
+         <TextView
             android:id="@+id/tvCategoryName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -27,8 +26,7 @@
             android:ellipsize="end"
             android:maxLines="1" />
 
-        <!-- Контейнер для иконок справа -->
-        <LinearLayout
+         <LinearLayout
             android:id="@+id/buttonsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -36,8 +34,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true">
 
-            <!-- Edit (фиолетовая как в event_item) -->
-            <ImageButton
+             <ImageButton
                 android:id="@+id/btnEdit"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -47,8 +44,7 @@
                 android:contentDescription="Edit"
                 app:tint="@color/purple_500" />
 
-            <!-- Delete (красная как в event_item) -->
-            <ImageButton
+             <ImageButton
                 android:id="@+id/btnDelete"
                 android:layout_width="40dp"
                 android:layout_height="40dp"

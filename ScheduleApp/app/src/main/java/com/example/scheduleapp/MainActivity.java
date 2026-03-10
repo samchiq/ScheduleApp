@@ -31,8 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Проверка авторизации
+  
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
         if (isLoggedIn) {
@@ -135,8 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         String userId = myAuth.getCurrentUser().getUid();
-
-                        // Исправленный порядок параметров
+  
                         Users newUser = new Users(email, phone, name, password);
 
                         usersRef.child(userId).setValue(newUser)
