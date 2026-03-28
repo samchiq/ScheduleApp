@@ -39,7 +39,6 @@
         <activity
             android:name=".CategoryPage"
             android:exported="false" />
-
         <receiver
             android:name=".EventNotificationReceiver"
             android:exported="false" />

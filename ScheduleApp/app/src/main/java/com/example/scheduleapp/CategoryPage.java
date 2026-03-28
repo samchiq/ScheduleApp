@@ -4,15 +4,9 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.widget.*;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 import java.util.*;
 
@@ -71,87 +65,6 @@ public class CategoryPage extends Menu {
         btnAddCategory.setOnClickListener(v -> showCategoryDialog(null));
 
         loadCategories();
-    }
-
-    @Override
-    protected void setupMenu() {
-        Toolbar toolbar = findViewById(R.id.toolbar_category);
-        setSupportActionBar(toolbar);
-
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout_category);
-        NavigationView navigationView = findViewById(R.id.nav_view_category);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, 0, 0);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_home) {
-                if (!(this instanceof HomePage)) {
-                    android.content.Intent intent = new android.content.Intent(this, HomePage.class);
-                    startActivity(intent);
-                } else {
-                    finish();
-                }
-                drawerLayout.closeDrawers();
-                return true;
-            } else if (id == R.id.nav_category) {
-                drawerLayout.closeDrawers();
-                return true;
-            } else if (id == R.id.nav_settings) {
-                if (!(this instanceof SettingsPage)) {
-                    android.content.Intent intent = new android.content.Intent(this, SettingsPage.class);
-                    startActivity(intent);
-                }
-                drawerLayout.closeDrawers();
-                return true;
-            } else if (id == R.id.nav_logout) {
-                FirebaseAuth.getInstance().signOut();
-                getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().clear().apply();
-                android.content.Intent intent = new android.content.Intent(this, MainActivity.class);
-                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        android.content.Intent.FLAG_ACTIVITY_NEW_TASK |
-                        android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-                return true;
-            }
-            drawerLayout.closeDrawers();
-            return false;
-        });
-
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            loadUserProfile();
-        }
-    }
-
-    private void loadUserProfile() {
-        String uid = currentUser.getUid();
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                currentUserNumber = snapshot.child("number").getValue(String.class);
-                currentUserName = snapshot.child("name").getValue(String.class);
-
-                updateNavHeader();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
-        });
-    }
-
-    @Override
-    protected void updateNavHeader() {
-        NavigationView navigationView = findViewById(R.id.nav_view_category);
-        if (navigationView != null && currentUserName != null) {
-            TextView tvTitle = navigationView.getHeaderView(0).findViewById(R.id.tvNavHeaderSubtitle);
-            tvTitle.setText("Welcome, " + currentUserName);
-        }
     }
 
     private void showCategoryDialog(Category categoryToEdit) {
