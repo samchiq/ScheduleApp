@@ -89,13 +89,22 @@ public class CategoryPage extends Menu {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
-                finish();
+                if (!(this instanceof HomePage)) {
+                    android.content.Intent intent = new android.content.Intent(this, HomePage.class);
+                    startActivity(intent);
+                } else {
+                    finish();
+                }
+                drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_category) {
                 drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_settings) {
-                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
+                if (!(this instanceof SettingsPage)) {
+                    android.content.Intent intent = new android.content.Intent(this, SettingsPage.class);
+                    startActivity(intent);
+                }
                 drawerLayout.closeDrawers();
                 return true;
             } else if (id == R.id.nav_logout) {
