@@ -8,12 +8,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
+/**
+ * Provides utility methods for geocoding and reverse geocoding using the Nominatim API.
+ * Handles network requests to search for locations and retrieve address details.
+ */
 public class Location {
 
+    /** Base URL for the Nominatim OpenStreetMap API. */
     private static final String BASE_URL = "https://nominatim.openstreetmap.org";
+    /** User agent string required for Nominatim API requests. */
     private static final String USER_AGENT = "ScheduleApp/1.0";
 
-     
+    /**
+     * Searches for a location based on a text query.
+     * Returns the first matching location result with address and coordinates.
+     */
     public static LocationResult searchLocation(String query) {
         if (query == null || query.trim().isEmpty()) {
             return null;
@@ -75,7 +84,10 @@ public class Location {
         return null;
     }
 
-
+    /**
+     * Retrieves address details for a specific set of geographic coordinates.
+     * Uses the reverse geocoding endpoint of the Nominatim API.
+     */
     public static LocationResult reverseGeocode(double lat, double lon) {
         try {
             String urlString = BASE_URL + "/reverse?lat=" + lat
@@ -126,14 +138,24 @@ public class Location {
         return null;
     }
 
-     
+    /**
+     * Data class that stores the result of a geocoding or reverse geocoding operation.
+     */
     public static class LocationResult {
+        /** The full formatted address of the location. */
         public String fullAddress;
+        /** The latitude coordinate of the location. */
         public double latitude;
+        /** The longitude coordinate of the location. */
         public double longitude;
+        /** The city or locality name of the location. */
         public String city;
+        /** The country name of the location. */
         public String country;
 
+        /**
+         * Initializes a location result with address and coordinates.
+         */
         public LocationResult(String address, double lat, double lon) {
             this.fullAddress = address;
             this.latitude = lat;
@@ -142,6 +164,9 @@ public class Location {
             this.country = "";
         }
 
+        /**
+         * Initializes a location result with full address details and coordinates.
+         */
         public LocationResult(String address, double lat, double lon, String city, String country) {
             this.fullAddress = address;
             this.latitude = lat;
@@ -151,6 +176,9 @@ public class Location {
         }
 
         @Override
+        /**
+         * Returns the full address string for the location.
+         */
         public String toString() {
             return fullAddress;
         }

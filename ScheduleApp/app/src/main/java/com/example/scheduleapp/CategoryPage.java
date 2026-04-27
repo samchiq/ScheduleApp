@@ -10,15 +10,27 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.*;
 import java.util.*;
 
+/**
+ * Manages the category management interface, allowing users to view, add, and edit categories.
+ * Handles Firebase synchronization for the user's category data.
+ */
 public class CategoryPage extends Menu {
 
+    /** RecyclerView to display the list of categories. */
     private RecyclerView recyclerCategories;
+    /** Button for adding a new category. */
     private FloatingActionButton btnAddCategory;
+    /** List of category objects fetched from the database. */
     private List<Category> categoryList;
+    /** Adapter for the category RecyclerView. */
     private CategoryAdapter categoryAdapter;
+    /** Reference to the current user's categories in Firebase. */
     private DatabaseReference categoriesRef;
 
     @Override
+    /**
+     * Initializes the activity and sets up the user interface components.
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.category_page);
@@ -67,6 +79,10 @@ public class CategoryPage extends Menu {
         loadCategories();
     }
 
+    /**
+     * Displays a dialog for adding or editing a category.
+     * Sets up the dialog UI and handles the save button click for both operations.
+     */
     private void showCategoryDialog(Category categoryToEdit) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_category);
@@ -112,6 +128,10 @@ public class CategoryPage extends Menu {
         dialog.show();
     }
 
+    /**
+     * Loads categories from the Firebase Realtime Database.
+     * Updates the category list and notifies the adapter when data changes.
+     */
     private void loadCategories() {
         categoriesRef.addValueEventListener(new ValueEventListener() {
             @Override

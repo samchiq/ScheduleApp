@@ -7,9 +7,17 @@ import android.content.Intent;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+/**
+ * BroadcastReceiver that handles displaying notifications for scheduled events.
+ * Triggered by AlarmManager to alert the user when an event is starting.
+ */
 public class EventNotificationReceiver extends BroadcastReceiver {
 
     @Override
+    /**
+     * Receives the broadcast and triggers a system notification for the event.
+     * Extracts event details from the intent and configures the notification builder.
+     */
     public void onReceive(Context context, Intent intent) {
         String eventId = intent.getStringExtra("eventId");
         String title = intent.getStringExtra("title");

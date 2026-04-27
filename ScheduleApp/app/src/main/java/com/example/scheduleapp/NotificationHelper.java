@@ -8,11 +8,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+/**
+ * Helper class for managing application notifications and scheduling alarms for events.
+ * Provides methods for creating notification channels and handling event-specific alerts.
+ */
 public class NotificationHelper {
 
+    /** Identifier for the application's event notification channel. */
     public static final String CHANNEL_ID = "schedule_events_channel";
+    /** User-visible name for the event notification channel. */
     public static final String CHANNEL_NAME = "Event Notifications";
 
+    /**
+     * Creates a notification channel for Android Oreo and above.
+     * Configures the channel with high importance for timely event alerts.
+     */
     public static void createNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -29,6 +39,10 @@ public class NotificationHelper {
         }
     }
 
+    /**
+     * Schedules a broadcast alarm to trigger a notification at a specific event time.
+     * Uses AlarmManager to ensure the alert is delivered even if the device is idle.
+     */
     public static void scheduleEventNotification(Context context, String eventId,
                                                  String title, long eventTime) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -61,6 +75,9 @@ public class NotificationHelper {
         }
     }
 
+    /**
+     * Cancels a previously scheduled notification alarm for a specific event.
+     */
     public static void cancelEventNotification(Context context, String eventId) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 

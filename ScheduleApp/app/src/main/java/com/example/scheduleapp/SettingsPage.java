@@ -5,12 +5,22 @@ import android.os.Bundle;
 import android.widget.CompoundButton;
 import androidx.appcompat.widget.SwitchCompat;
 
+/**
+ * Manages the application settings and user preferences.
+ * Currently handles notification toggling and persists state in SharedPreferences.
+ */
 public class SettingsPage extends Menu {
 
+    /** Switch component for enabling or disabling notifications. */
     private SwitchCompat switchNotifications;
+    /** SharedPreferences instance for storing setting values. */
     private SharedPreferences prefs;
 
     @Override
+    /**
+     * Initializes the activity and sets up the preferences interface.
+     * Configures the notification switch based on stored user settings.
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_page);
@@ -25,6 +35,9 @@ public class SettingsPage extends Menu {
 
         switchNotifications.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
+            /**
+             * Saves the notification preference when the switch state changes.
+             */
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 prefs.edit().putBoolean("notifications_enabled", isChecked).apply();
             }

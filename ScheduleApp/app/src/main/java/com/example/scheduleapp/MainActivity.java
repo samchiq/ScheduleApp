@@ -16,19 +16,33 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+/**
+ * The main entry point for the application, handling user authentication and registration.
+ * Manages login state using SharedPreferences and synchronizes user data with Firebase.
+ */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    /** Input fields for email and password on the login screen. */
     EditText etMail, etPassword;
+    /** Buttons for triggering login and registration actions. */
     Button btnLogin, btnRegister;
 
+    /** Dialog used for the registration form. */
     Dialog d;
+    /** Save button within the registration dialog. */
     Button btnSave;
+    /** Input fields for name, number, email, and password in the registration dialog. */
     EditText etRegName, etRegNumber, etRegMail, etRegPassword;
 
+    /** Firebase Authentication instance for managing user sign-in and sign-up. */
     FirebaseAuth myAuth;
+    /** Reference to the users collection in the Firebase Realtime Database. */
     DatabaseReference usersRef;
 
     @Override
+    /**
+     * Initializes the activity, checks for an existing login session, and sets up UI components.
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
   
@@ -55,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    /**
+     * Handles click events for login, register, and save buttons.
+     */
     public void onClick(View view) {
         if (view == btnLogin) {
             login();
@@ -83,6 +100,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * Attempts to sign the user in with email and password.
+     * Updates SharedPreferences on success and navigates to the HomePage.
+     */
     private void login() {
         String email = etMail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
@@ -109,6 +130,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
     }
 
+    /**
+     * Validates registration details and creates a new user account in Firebase.
+     * Stores additional user profile information in the Realtime Database upon success.
+     */
     private void register() {
         String name = etRegName.getText().toString().trim();
         String phone = etRegNumber.getText().toString().trim();

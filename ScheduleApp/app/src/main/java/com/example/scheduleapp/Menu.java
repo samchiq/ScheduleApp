@@ -20,24 +20,43 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+/**
+ * Base activity class that provides a navigation drawer and common menu functionality.
+ * Handles user profile loading and subscription to event invitations.
+ */
 public class Menu extends AppCompatActivity {
 
+    /** Layout for the navigation drawer. */
     protected DrawerLayout drawerLayout;
+    /** View for the navigation menu items. */
     protected NavigationView navigationView;
+    /** Toolbar used for the action bar. */
     protected Toolbar toolbar;
 
+    /** Currently authenticated Firebase user. */
     protected FirebaseUser currentUser;
+    /** Display name of the current user. */
     protected String currentUserName;
+    /** Phone number of the current user used for invitations. */
     protected String currentUserNumber;
 
+    /** Reference to the user's invitations in Firebase. */
     protected DatabaseReference inviteRef;
+    /** Listener for changes in the user's invitations. */
     protected ValueEventListener inviteListener;
 
     @Override
+    /**
+     * Standard activity lifecycle method for initialization.
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
 
+    /**
+     * Configures the toolbar, navigation drawer, and listener for menu item selections.
+     * Also initializes the current user and triggers profile loading.
+     */
     protected void setupMenu() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -87,6 +106,10 @@ public class Menu extends AppCompatActivity {
         }
     }
 
+    /**
+     * Fetches the current user's profile information from Firebase.
+     * Updates the navigation header and subscribes to invitations once data is retrieved.
+     */
     private void loadUserProfile() {
         String uid = currentUser.getUid();
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
@@ -108,6 +131,9 @@ public class Menu extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the text in the navigation drawer header with a welcome message for the user.
+     */
     protected void updateNavHeader() {
         if (navigationView != null && currentUserName != null) {
             TextView tvTitle = navigationView.getHeaderView(0).findViewById(R.id.tvNavHeaderSubtitle);
@@ -115,10 +141,16 @@ public class Menu extends AppCompatActivity {
         }
     }
 
+    /**
+     * Removes all non-numeric characters from a phone number string.
+     */
     protected String normalizePhone(String phone) {
         return phone == null ? "" : phone.replaceAll("[^\\d]", "");
     }
 
+    /**
+     * Sets up a Firebase listener for event invitations directed at the user's phone number.
+     */
     protected void subscribeToInvites(String normalizedNumber) {
         if (normalizedNumber == null || normalizedNumber.isEmpty()) return;
 
@@ -141,11 +173,17 @@ public class Menu extends AppCompatActivity {
         inviteRef.addValueEventListener(inviteListener);
     }
 
+    /**
+     * Hook for subclasses to handle incoming invitation data changes.
+     */
     protected void handleInvites(DataSnapshot snapshot) {
   
     }
 
     @Override
+    /**
+     * Cleans up Firebase listeners when the activity is paused to prevent memory leaks.
+     */
     protected void onPause() {
         super.onPause();
         if (inviteRef != null && inviteListener != null) {

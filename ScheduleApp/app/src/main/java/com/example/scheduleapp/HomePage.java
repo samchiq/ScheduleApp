@@ -21,17 +21,31 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Main dashboard of the application displaying a calendar and events for the selected day.
+ * Allows users to manage events, locations, and invitations from other users.
+ */
 public class HomePage extends Menu {
 
+    /** Calendar view for date selection. */
     private CalendarView calendarView;
+    /** Button for adding a new event. */
     private FloatingActionButton btnAddEvent;
+    /** Currently selected date in milliseconds. */
     private long selectedDate;
+    /** Reference to the current user's events in Firebase. */
     private DatabaseReference eventsRef;
+    /** RecyclerView for listing events on the selected date. */
     private RecyclerView recyclerEvents;
+    /** List of events displayed for the current selection. */
     private List<Event> eventList;
+    /** Adapter for the events RecyclerView. */
     private EventAdapter eventAdapter;
 
     @Override
+    /**
+     * Initializes the activity, sets up the menu, and loads events for the current day.
+     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_page);
@@ -67,6 +81,10 @@ public class HomePage extends Menu {
         btnAddEvent.setOnClickListener(v -> showEventDialog(null));
     }
 
+    /**
+     * Configures the RecyclerView and its adapter for displaying events.
+     * Defines actions for editing, deleting, sharing, and location management of events.
+     */
     private void setupRecyclerView() {
         eventList = new ArrayList<>();
         eventAdapter = new EventAdapter(eventList, new EventAdapter.OnEventClickListener() {
@@ -105,6 +123,10 @@ public class HomePage extends Menu {
         recyclerEvents.setAdapter(eventAdapter);
     }
   
+    /**
+     * Displays a selection dialog for location-based actions.
+     * Allows the user to either open the existing location in maps or change it.
+     */
     private void showLocationSpinner(Event event) {
   
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -137,6 +159,9 @@ public class HomePage extends Menu {
         builder.show();
     }
   
+    /**
+     * Opens the event's location coordinates in an external maps application.
+     */
     private void openLocationInMaps(Event event) {
         if (!event.hasLocation()) return;
 
@@ -163,6 +188,10 @@ public class HomePage extends Menu {
         }
     }
   
+    /**
+     * Displays a dialog for searching and setting a location for an event.
+     * Performs a mock search and allows saving coordinates to the event.
+     */
     private void showLocationDialog(Event event) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_add_location);
@@ -276,6 +305,9 @@ public class HomePage extends Menu {
     }
 
     @Override
+    /**
+     * Scans for pending event invitations for the current user.
+     */
     protected void handleInvites(DataSnapshot snapshot) {
         for (DataSnapshot inviteSnap : snapshot.getChildren()) {
             Map<String, Object> invite = (Map<String, Object>) inviteSnap.getValue();
@@ -289,6 +321,9 @@ public class HomePage extends Menu {
         }
     }
 
+    /**
+     * Processes an invitation snapshot to retrieve sender information and show an alert.
+     */
     private void handleInviteSnapshot(DataSnapshot inviteSnap) {
         if (inviteSnap == null) return;
         Map<String, Object> invite = (Map<String, Object>) inviteSnap.getValue();
@@ -319,6 +354,10 @@ public class HomePage extends Menu {
         });
     }
 
+    /**
+     * Displays a dialog allowing the user to accept or decline an event invitation.
+     * On acceptance, the event is added to the user's schedule.
+     */
     private void showInviteDialog(String eventTitle, String fromName, String inviteId, String normalizedNumber) {
         new AlertDialog.Builder(this)
                 .setTitle("Event Invitation")
@@ -362,6 +401,9 @@ public class HomePage extends Menu {
                 .show();
     }
 
+    /**
+     * Displays a dialog for sharing an event with another user via their phone number.
+     */
     private void showShareDialog(Event event) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.dialog_share_event);
@@ -386,6 +428,9 @@ public class HomePage extends Menu {
         dialog.show();
     }
 
+    /**
+     * Sends an event invitation to the specified phone number after verifying user existence.
+     */
     private void sendInvite(Event event, String phoneNumber) {
         final String normalizedPhone = normalizePhone(phoneNumber);
         if (normalizedPhone.isEmpty()) {
@@ -440,6 +485,10 @@ public class HomePage extends Menu {
         });
     }
 
+    /**
+     * Displays a dialog for creating or editing an event.
+     * Manages input for event title, category selection, and time intervals.
+     */
     private void showEventDialog(Event eventToEdit) {
         Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.create_event);
@@ -547,6 +596,10 @@ public class HomePage extends Menu {
 
         dialog.show();
     }
+
+    /**
+     * Opens a time picker dialog to select either start or end time for an event.
+     */
     private void pickTime(boolean isStart, long[] timeArray, TextView tvTime, long[] otherTime) {
         com.google.android.material.timepicker.MaterialTimePicker picker =
                 new com.google.android.material.timepicker.MaterialTimePicker.Builder()
@@ -576,11 +629,17 @@ public class HomePage extends Menu {
         });
     }
 
+    /**
+     * Updates the time range display in the user interface.
+     */
     private void updateTimeText(TextView tv, long start, long end) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
         tv.setText(sdf.format(new Date(start)) + " - " + sdf.format(new Date(end)));
     }
 
+    /**
+     * Fetches events for the specified date from Firebase and updates the display list.
+     */
     private void loadEventsForDay(long dateMillis) {
         Calendar startOfDay = Calendar.getInstance();
         startOfDay.setTimeInMillis(dateMillis);
