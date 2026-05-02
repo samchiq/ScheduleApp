@@ -1,6 +1,9 @@
 package com.example.scheduleapp;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -8,6 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
@@ -51,6 +58,20 @@ public class Menu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         applyTheme();
         super.onCreate(savedInstanceState);
+        
+        NotificationHelper.createNotificationChannel(this);
+        checkNotificationPermission();
+    }
+
+    /**
+     * Checks and requests notification permission for Android 13+.
+     */
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
     }
 
     /**
@@ -131,18 +152,26 @@ public class Menu extends AppCompatActivity {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                currentUserNumber = snapshot.child("number").getValue(String.class);
-                currentUserName = snapshot.child("name").getValue(String.class);
+                Users user = snapshot.getValue(Users.class);
+                if (user != null) {
+                    currentUserNumber = user.getNumber();
+                    currentUserName = user.getName();
+                }
 
                 updateNavHeader();
 
                 if (currentUserNumber != null && !currentUserNumber.isEmpty()) {
+                    android.util.Log.d("NotificationDebug", "Subscribing to invites for: " + currentUserNumber);
                     subscribeToInvites(normalizePhone(currentUserNumber));
+                } else {
+                    android.util.Log.e("NotificationDebug", "currentUserNumber is null or empty for UID: " + uid);
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) {
+                android.util.Log.e("NotificationDebug", "loadUserProfile cancelled: " + error.getMessage());
+            }
         });
     }
 
@@ -167,13 +196,23 @@ public class Menu extends AppCompatActivity {
      * Sets up a Firebase listener for event invitations directed at the user's phone number.
      */
     protected void subscribeToInvites(String normalizedNumber) {
-        if (normalizedNumber == null || normalizedNumber.isEmpty()) return;
+        if (normalizedNumber == null || normalizedNumber.isEmpty()) {
+            return;
+        }
+
+        DatabaseReference newInviteRef = FirebaseDatabase.getInstance().getReference("invites").child(normalizedNumber);
+        
+        // Use toString() to compare paths if getPath() is restricted
+        if (inviteRef != null && inviteRef.toString().equals(newInviteRef.toString())) {
+            android.util.Log.d("NotificationDebug", "Already subscribed to: " + normalizedNumber);
+            return;
+        }
 
         if (inviteRef != null && inviteListener != null) {
             try { inviteRef.removeEventListener(inviteListener); } catch (Exception ignored) {}
         }
 
-        inviteRef = FirebaseDatabase.getInstance().getReference("invites").child(normalizedNumber);
+        inviteRef = newInviteRef;
 
         inviteListener = new ValueEventListener() {
             @Override
@@ -182,17 +221,71 @@ public class Menu extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) {
+                android.util.Log.e("NotificationDebug", "inviteListener cancelled: " + error.getMessage());
+            }
         };
 
         inviteRef.addValueEventListener(inviteListener);
+        android.util.Log.d("NotificationDebug", "Subscribed successfully to: " + normalizedNumber);
     }
 
     /**
      * Hook for subclasses to handle incoming invitation data changes.
      */
     protected void handleInvites(DataSnapshot snapshot) {
-  
+        android.util.Log.d("NotificationDebug", "handleInvites triggered with " + snapshot.getChildrenCount() + " children");
+        for (DataSnapshot inviteSnap : snapshot.getChildren()) {
+            java.util.Map<String, Object> invite = (java.util.Map<String, Object>) inviteSnap.getValue();
+            if (invite != null) {
+                Object statusObj = invite.get("status");
+                String status = statusObj != null ? statusObj.toString() : "";
+                android.util.Log.d("NotificationDebug", "Invite status: " + status);
+                if ("pending".equals(status)) {
+                    String title = invite.get("title") != null ? invite.get("title").toString() : "Event";
+                    String fromName = invite.get("fromName") != null ? invite.get("fromName").toString() : "Someone";
+                    showInviteNotification(inviteSnap.getKey(), title, fromName);
+                }
+            }
+        }
+    }
+
+    /**
+     * Displays a system notification for an event invitation.
+     */
+    private void showInviteNotification(String inviteId, String title, String fromName) {
+        if (inviteId == null) return;
+        android.util.Log.d("NotificationDebug", "Showing notification for: " + title);
+
+        Intent intent = new Intent(this, HomePage.class);
+        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
+                this, 0, intent, android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NotificationHelper.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle("New Invitation")
+                .setContentText(fromName + " invited you to: " + title)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+        try {
+            manager.notify(inviteId.hashCode(), builder.build());
+            android.util.Log.d("NotificationDebug", "manager.notify called successfully");
+        } catch (SecurityException e) {
+            android.util.Log.e("NotificationDebug", "SecurityException in notify", e);
+        } catch (Exception e) {
+            android.util.Log.e("NotificationDebug", "Error in notify", e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentUser != null) {
+            loadUserProfile();
+        }
     }
 
     @Override

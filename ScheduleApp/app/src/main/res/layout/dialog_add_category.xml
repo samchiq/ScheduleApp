@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_width="match_parent"
+    android:padding="24dp"
+    android:layout_width="320dp"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_dialog_rounded">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Category Details"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="16dp"/>
 
     <EditText
         android:id="@+id/etCategoryName"
@@ -12,16 +21,43 @@
         android:layout_height="wrap_content"
         android:hint="Category name"
         android:inputType="textCapWords"
-        android:background="@android:color/transparent"
+        android:background="@drawable/edittext_bg"
         android:textColor="?attr/colorOnSurface"
-        android:textColorHint="?attr/colorOnSurfaceVariant"/>
+        android:textColorHint="?attr/colorOnSurfaceVariant"
+        android:padding="16dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Color"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginTop="16dp"/>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/layoutColorPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="4dp">
+            <!-- Color circles will be added dynamically -->
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <Button
         android:id="@+id/btnSaveCategory"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Save"
-        android:layout_marginTop="12dp"
+        android:layout_height="56dp"
+        android:text="Save Category"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp"
         android:background="@drawable/bg_button_primary"
         android:textColor="?attr/colorOnPrimary"/>
 </LinearLayout>

@@ -16,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -66,7 +67,7 @@ public class HomePage extends Menu {
         }
 
         String uid = currentUser.getUid();
-        eventsRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+        eventsRef = FirebaseDatabase.getInstance()
                 .getReference("user_events").child(uid);
 
         setupRecyclerView();
@@ -312,6 +313,7 @@ public class HomePage extends Menu {
      * Scans for pending event invitations for the current user.
      */
     protected void handleInvites(DataSnapshot snapshot) {
+        super.handleInvites(snapshot);
         for (DataSnapshot inviteSnap : snapshot.getChildren()) {
             Map<String, Object> invite = (Map<String, Object>) inviteSnap.getValue();
             if (invite != null) {
@@ -334,41 +336,45 @@ public class HomePage extends Menu {
 
         String title = invite.get("title") != null ? invite.get("title").toString() : "Event";
         String fromUserUid = invite.get("fromUser") != null ? invite.get("fromUser").toString() : null;
+        String fromName = invite.get("fromName") != null ? invite.get("fromName").toString() : "Someone";
         String inviteId = inviteSnap.getKey();
         String normalizedNumber = normalizePhone(currentUserNumber);
 
         if (fromUserUid == null || inviteId == null) return;
 
-        DatabaseReference fromRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                .getReference("users").child(fromUserUid);
-        fromRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot fromSnapshot) {
-                String fromName = fromSnapshot.child("name").getValue(String.class);
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        showInviteDialog(title, fromName != null ? fromName : "Someone", inviteId, normalizedNumber);
-                    }
-                });
-            }
+        // Extract event details from invitation
+        long startTime = invite.get("startTime") != null ? ((Number) invite.get("startTime")).longValue() : System.currentTimeMillis();
+        long endTime = invite.get("endTime") != null ? ((Number) invite.get("endTime")).longValue() : System.currentTimeMillis() + 60 * 60 * 1000;
+        String location = invite.get("location") != null ? invite.get("location").toString() : "";
+        String category = invite.get("category") != null ? invite.get("category").toString() : "General";
+        double latitude = invite.get("latitude") != null ? ((Number) invite.get("latitude")).doubleValue() : 0.0;
+        double longitude = invite.get("longitude") != null ? ((Number) invite.get("longitude")).doubleValue() : 0.0;
+        String color = invite.get("color") != null ? invite.get("color").toString() : "#FF1E88E5";
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+        runOnUiThread(() -> {
+            if (!isFinishing() && !isDestroyed()) {
+                showInviteDialog(title, fromName, inviteId, normalizedNumber, startTime, endTime, location, latitude, longitude, category, color);
+            }
         });
     }
 
-    /**
-     * Displays a dialog allowing the user to accept or decline an event invitation.
+    /** Displays a dialog allowing the user to accept or decline an event invitation.
      * On acceptance, the event is added to the user's schedule.
      */
-    private void showInviteDialog(String eventTitle, String fromName, String inviteId, String normalizedNumber) {
+    private void showInviteDialog(String eventTitle, String fromName, String inviteId, String normalizedNumber,
+                                  long startTime, long endTime, String location, double latitude, double longitude, String category, String color) {
+        String timeRange = new SimpleDateFormat("HH:mm", Locale.getDefault())
+                .format(new Date(startTime)) + " - " +
+                new SimpleDateFormat("HH:mm", Locale.getDefault())
+                        .format(new Date(endTime));
+
         new AlertDialog.Builder(this)
                 .setTitle("Event Invitation")
-                .setMessage(fromName + " invited you to the event:\n\n" + eventTitle)
+                .setMessage(fromName + " invited you to the event:\n\n" + eventTitle + "\nTime: " + timeRange + (location.isEmpty() ? "" : "\nLocation: " + location))
                 .setCancelable(false)
                 .setPositiveButton("Accept", (dialog, which) -> {
                     String uid = currentUser.getUid();
-                    DatabaseReference userEventsRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                    DatabaseReference userEventsRef = FirebaseDatabase.getInstance()
                             .getReference("user_events").child(uid);
 
                     String newEventId = userEventsRef.push().getKey();
@@ -376,14 +382,19 @@ public class HomePage extends Menu {
                         Event newEvent = new Event(
                                 newEventId,
                                 eventTitle,
-                                "Shared",
-                                System.currentTimeMillis(),
-                                System.currentTimeMillis() + 60 * 60 * 1000
+                                category,
+                                startTime,
+                                endTime
                         );
+                        newEvent.setLocationAddress(location);
+                        newEvent.setLatitude(latitude);
+                        newEvent.setLongitude(longitude);
+                        newEvent.setColor(color);
+                        
                         userEventsRef.child(newEventId).setValue(newEvent);
                     }
 
-                    com.google.firebase.database.FirebaseDatabase.getInstance()
+                    FirebaseDatabase.getInstance()
                             .getReference("invites")
                             .child(normalizedNumber)
                             .child(inviteId)
@@ -393,7 +404,7 @@ public class HomePage extends Menu {
                     loadEventsForDay(selectedDate);
                 })
                 .setNegativeButton("Decline", (dialog, which) -> {
-                    com.google.firebase.database.FirebaseDatabase.getInstance()
+                    FirebaseDatabase.getInstance()
                             .getReference("invites")
                             .child(normalizedNumber)
                             .child(inviteId)
@@ -423,9 +434,8 @@ public class HomePage extends Menu {
                 etPhone.setError("Enter phone number");
                 return;
             }
-            sendInvite(event, phone);
             dialog.dismiss();
-            Toast.makeText(this, "Invitation sent to " + phone, Toast.LENGTH_SHORT).show();
+            sendInvite(event, phone);
         });
 
         dialog.show();
@@ -435,58 +445,77 @@ public class HomePage extends Menu {
      * Sends an event invitation to the specified phone number after verifying user existence.
      */
     private void sendInvite(Event event, String phoneNumber) {
+        Toast.makeText(this, "Searching for user...", Toast.LENGTH_SHORT).show();
         final String normalizedPhone = normalizePhone(phoneNumber);
+        
         if (normalizedPhone.isEmpty()) {
             Toast.makeText(this, "Invalid phone number", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        DatabaseReference usersRef = com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users");
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        // Look up UID directly from phone_to_uid map
+        DatabaseReference phoneMapRef = FirebaseDatabase.getInstance().getReference("phone_to_uid").child(normalizedPhone);
+        phoneMapRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String targetUserKey = null;
-                for (DataSnapshot userSnap : snapshot.getChildren()) {
-                    String storedNumber = userSnap.child("number").getValue(String.class);
-                    if (storedNumber != null && normalizePhone(storedNumber).equals(normalizedPhone)) {
-                        targetUserKey = userSnap.getKey();
-                        break;
+                try {
+                    String targetUserKey = snapshot.getValue(String.class);
+
+                    if (targetUserKey == null) {
+                        Toast.makeText(HomePage.this, "User with this number not found", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    DatabaseReference invitesRef = FirebaseDatabase.getInstance()
+                            .getReference("invites").child(normalizedPhone);
+                    String inviteId = invitesRef.push().getKey();
+                    if (inviteId == null) {
+                        Toast.makeText(HomePage.this, "Failed to create invite", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String senderName = currentUserName;
+                    if (senderName == null || senderName.isEmpty()) {
+                        if (currentUser.getEmail() != null) {
+                            senderName = currentUser.getEmail();
+                        } else {
+                            senderName = "Someone";
+                        }
+                    }
+
+                    Map<String, Object> inviteData = new HashMap<>();
+                    inviteData.put("eventId", event.getId());
+                    inviteData.put("title", event.getTitle());
+                    inviteData.put("startTime", event.getStartTime());
+                    inviteData.put("endTime", event.getEndTime());
+                    inviteData.put("location", event.getLocationAddress());
+                    inviteData.put("category", event.getDescription());
+                    inviteData.put("latitude", event.getLatitude());
+                    inviteData.put("longitude", event.getLongitude());
+                    inviteData.put("color", event.getColor());
+                    inviteData.put("fromUser", currentUser.getUid());
+                    inviteData.put("fromName", senderName);
+                    inviteData.put("status", "pending");
+
+                    invitesRef.child(inviteId).setValue(inviteData)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(HomePage.this, "Invitation sent!", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Exception e = task.getException();
+                                    String errorMsg = (e != null) ? e.getMessage() : "Unknown error";
+                                    Toast.makeText(HomePage.this, "Error: " + errorMsg, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                } catch (Exception e) {
+                    Toast.makeText(HomePage.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-
-                if (targetUserKey == null) {
-                    Toast.makeText(HomePage.this, "User with this number not found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                DatabaseReference invitesRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                        .getReference("invites").child(normalizedPhone);
-                String inviteId = invitesRef.push().getKey();
-                if (inviteId == null) {
-                    Toast.makeText(HomePage.this, "Failed to create invite", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Map<String, Object> inviteData = new HashMap<>();
-                inviteData.put("eventId", event.getId());
-                inviteData.put("title", event.getTitle());
-                inviteData.put("fromUser", currentUser.getUid());
-                inviteData.put("status", "pending");
-
-                invitesRef.child(inviteId).setValue(inviteData)
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(HomePage.this, "Invitation sent!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Exception e = task.getException();
-                                String errorMsg = (e != null) ? e.getMessage() : "Unknown error";
-                                Toast.makeText(HomePage.this, "Error: " + errorMsg, Toast.LENGTH_LONG).show();
-                            }
-                        });
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(HomePage.this, "Lookup failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -523,6 +552,8 @@ public class HomePage extends Menu {
         final long[] startTime = { calStart.getTimeInMillis() };
         final long[] endTime   = { calEnd.getTimeInMillis() };
         final String[] eventId = { null };
+        final String[] eventColor = { "#FF1E88E5" };
+        final Map<String, String> categoryColorMap = new HashMap<>();
 
         SimpleDateFormat sdfDate = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         tvDate.setText("Selected date: " + sdfDate.format(new Date(selectedDate)));
@@ -532,21 +563,21 @@ public class HomePage extends Menu {
         btnPickEnd.setOnClickListener(v   -> pickTime(false, endTime,   tvTime, startTime));
   
         String uid = currentUser.getUid();
-        com.google.firebase.database.FirebaseDatabase.getInstance()
+        FirebaseDatabase.getInstance()
                 .getReference("user_categories").child(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<String> categoryNames = new ArrayList<>();
+                        categoryNames.add("None"); // Add "None" as the first option
+                        categoryColorMap.put("None", "#FF1E88E5");
+
                         for (DataSnapshot ds : snapshot.getChildren()) {
                             Category cat = ds.getValue(Category.class);
                             if (cat != null && cat.getName() != null) {
                                 categoryNames.add(cat.getName());
+                                categoryColorMap.put(cat.getName(), cat.getColor());
                             }
-                        }
-  
-                        if (categoryNames.isEmpty()) {
-                            categoryNames.add("General");
                         }
 
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -556,14 +587,22 @@ public class HomePage extends Menu {
                         );
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerCategory.setAdapter(adapter);
+                        
+                        // Default selection is "None" (index 0)
+                        spinnerCategory.setSelection(0);
   
                         if (eventToEdit != null) {
                             etTitle.setText(eventToEdit.getTitle());
-                            int pos = adapter.getPosition(eventToEdit.getDescription());
+                            String currentCategory = eventToEdit.getDescription();
+                            if (currentCategory == null || currentCategory.isEmpty() || currentCategory.equals("General")) {
+                                currentCategory = "None";
+                            }
+                            int pos = adapter.getPosition(currentCategory);
                             if (pos >= 0) spinnerCategory.setSelection(pos);
                             startTime[0] = eventToEdit.getStartTime();
                             endTime[0]   = eventToEdit.getEndTime();
                             eventId[0]   = eventToEdit.getId();
+                            eventColor[0] = eventToEdit.getColor();
                             updateTimeText(tvTime, startTime[0], endTime[0]);
                         }
                     }
@@ -577,7 +616,11 @@ public class HomePage extends Menu {
         btnSave.setOnClickListener(v -> {
             String title    = etTitle.getText().toString().trim();
             Object selected = spinnerCategory.getSelectedItem();
-            String category = selected != null ? selected.toString() : "General";
+            String selectedCategory = selected != null ? selected.toString() : "None";
+            
+            // If "None" is selected, the category description should be empty
+            String categoryDescription = "None".equals(selectedCategory) ? "" : selectedCategory;
+            String color = categoryColorMap.getOrDefault(selectedCategory, "#FF1E88E5");
 
             if (title.isEmpty()) {
                 etTitle.setError("Enter title");
@@ -590,7 +633,8 @@ public class HomePage extends Menu {
             }
 
             String id = (eventId[0] != null) ? eventId[0] : eventsRef.push().getKey();
-            Event event = new Event(id, title, category, startTime[0], endTime[0]);
+            Event event = new Event(id, title, categoryDescription, startTime[0], endTime[0]);
+            event.setColor(color);
 
             if (eventToEdit != null && eventToEdit.hasLocation()) {
                 event.setLocationAddress(eventToEdit.getLocationAddress());
@@ -658,6 +702,8 @@ public class HomePage extends Menu {
      * Fetches events for the specified date from Firebase and updates the display list.
      */
     private void loadEventsForDay(long dateMillis) {
+        if (eventsRef == null) return;
+
         Calendar startOfDay = Calendar.getInstance();
         startOfDay.setTimeInMillis(dateMillis);
         startOfDay.set(Calendar.HOUR_OF_DAY, 0);
@@ -695,7 +741,11 @@ public class HomePage extends Menu {
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) { }
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        if (error.getCode() != DatabaseError.PERMISSION_DENIED) {
+                            Toast.makeText(HomePage.this, "Failed to load events", Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 });
     }
 }

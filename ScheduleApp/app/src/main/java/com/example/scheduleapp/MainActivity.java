@@ -162,9 +162,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   
                         Users newUser = new Users(email, phone, name, password);
 
+                        // Save user profile
                         usersRef.child(userId).setValue(newUser)
                                 .addOnCompleteListener(saveTask -> {
                                     if (saveTask.isSuccessful()) {
+                                        // Also save phone-to-UID mapping for invitation lookups
+                                        String normalizedPhone = phone.replaceAll("[^\\d]", "");
+                                        if (!normalizedPhone.isEmpty()) {
+                                            FirebaseDatabase.getInstance().getReference("phone_to_uid")
+                                                    .child(normalizedPhone).setValue(userId);
+                                        }
+
                                         Toast.makeText(MainActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
                                         if (d != null && d.isShowing()) d.dismiss();
                                     } else {

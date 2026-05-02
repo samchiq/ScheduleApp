@@ -2,6 +2,7 @@ package com.example.scheduleapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -76,7 +77,44 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         holder.tvTitle.setText(event.getTitle());
         holder.tvTime.setText(timeRange);
-        holder.tvCategory.setText("Category: " + event.getDescription());
+        
+        String category = event.getDescription();
+        if (category == null || category.isEmpty()) {
+            holder.tvCategory.setVisibility(View.GONE);
+        } else {
+            holder.tvCategory.setVisibility(View.VISIBLE);
+            holder.tvCategory.setText("Category: " + category);
+        }
+
+        if (event.getColor() != null) {
+            try {
+                int color = Color.parseColor(event.getColor());
+                holder.cardView.setCardBackgroundColor(color);
+
+                // Adjust text and icon colors based on background luminance
+                int textColor = isColorDark(color) ? Color.WHITE : Color.BLACK;
+                int subTextColor = isColorDark(color) ? Color.argb(178, 255, 255, 255) : Color.argb(178, 0, 0, 0);
+
+                holder.tvTitle.setTextColor(textColor);
+                holder.tvTime.setTextColor(subTextColor);
+                
+                holder.btnEdit.setColorFilter(textColor);
+                holder.btnShare.setColorFilter(textColor);
+                holder.btnLocation.setColorFilter(textColor);
+                holder.btnDelete.setColorFilter(textColor);
+                
+                // Keep category tag style or adjust it
+                if (isColorDark(color)) {
+                    holder.tvCategory.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.argb(50, 255, 255, 255)));
+                    holder.tvCategory.setTextColor(Color.WHITE);
+                } else {
+                    holder.tvCategory.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.argb(50, 0, 0, 0)));
+                    holder.tvCategory.setTextColor(Color.BLACK);
+                }
+            } catch (Exception e) {
+                // Fallback
+            }
+        }
   
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditClick(event);
@@ -101,6 +139,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             holder.btnLocation.setImageResource(R.drawable.ic_location);
   
         }
+    }
+
+    /**
+     * Determines if a color is dark based on its luminance.
+     */
+    private boolean isColorDark(int color) {
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        return darkness >= 0.5;
     }
 
     @Override
@@ -144,6 +190,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      * ViewHolder class that holds references to the views for each event item.
      */
     static class EventViewHolder extends RecyclerView.ViewHolder {
+        /** CardView for background color. */
+        com.google.android.material.card.MaterialCardView cardView;
         /** TextViews for displaying event details. */
         TextView tvTitle, tvTime, tvCategory;
         /** Buttons for various event actions. */
@@ -154,6 +202,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
          */
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardView = (com.google.android.material.card.MaterialCardView) itemView;
             tvTitle = itemView.findViewById(R.id.tvEventTitle);
             tvTime = itemView.findViewById(R.id.tvEventTime);
             tvCategory = itemView.findViewById(R.id.tvEventCategory);

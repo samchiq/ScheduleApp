@@ -1,13 +1,19 @@
 <resources>
 
-    <style name="CalendarDark" parent="ThemeOverlay.Material3.Dark">
-        <item name="android:weekDayTextAppearance">@style/CalendarDarkText</item>
-        <item name="android:dateTextAppearance">@style/CalendarDarkText</item>
+    <style name="AppCalendarTheme" parent="ThemeOverlay.Material3">
+        <item name="android:weekDayTextAppearance">@style/CalendarDayText</item>
+        <item name="android:dateTextAppearance">@style/CalendarDayText</item>
+        <item name="android:headerMonthTextAppearance">@style/CalendarHeaderText</item>
         <item name="android:colorAccent">?attr/colorPrimary</item>
     </style>
 
-    <style name="CalendarDarkText" parent="@android:style/TextAppearance.Small">
+    <style name="CalendarDayText" parent="@android:style/TextAppearance.Small">
         <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="CalendarHeaderText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="Theme.ScheduleApp.HomePage" parent="Theme.ScheduleApp">

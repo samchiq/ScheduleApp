@@ -19,7 +19,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:titleTextColor="?attr/colorOnPrimary"
-            app:title="ScheduleApp"
+            app:title="Schedule"
             app:navigationIcon="@drawable/ic_menu" />
 
         <RelativeLayout
@@ -42,7 +42,7 @@
                     android:id="@+id/calendarView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:theme="@style/CalendarDark" />
+                    android:theme="@style/AppCalendarTheme" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView

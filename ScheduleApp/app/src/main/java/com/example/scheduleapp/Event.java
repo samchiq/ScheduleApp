@@ -22,11 +22,15 @@ public class Event {
     private double latitude;
     /** The longitude coordinate for the event location. */
     private double longitude;
+    /** The hex color code for the event. */
+    private String color;
 
     /**
      * Default constructor required for Firebase data mapping.
      */
-    public Event() { }
+    public Event() {
+        this.color = "#FF1E88E5"; // Default blue
+    }
 
     /**
      * Initializes an event with basic details.
@@ -40,6 +44,7 @@ public class Event {
         this.locationAddress = "";
         this.latitude = 0.0;
         this.longitude = 0.0;
+        this.color = "#FF1E88E5"; // Default blue
     }
   
     /**
@@ -55,6 +60,23 @@ public class Event {
         this.locationAddress = locationAddress;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.color = "#FF1E88E5"; // Default blue
+    }
+
+    /**
+     * Initializes an event with full details including color.
+     */
+    public Event(String id, String title, String description, long startTime, long endTime,
+                 String locationAddress, double latitude, double longitude, String color) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.locationAddress = locationAddress;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.color = color;
     }
   
     public String getId() { return id; }
@@ -65,6 +87,7 @@ public class Event {
     public String getLocationAddress() { return locationAddress != null ? locationAddress : ""; }
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
+    public String getColor() { return color; }
   
     public void setId(String id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
@@ -74,6 +97,7 @@ public class Event {
     public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
     public void setLatitude(double latitude) { this.latitude = latitude; }
     public void setLongitude(double longitude) { this.longitude = longitude; }
+    public void setColor(String color) { this.color = color; }
   
     /**
      * Checks if the event has a valid location address associated with it.
