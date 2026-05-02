@@ -3,7 +3,6 @@ package com.example.scheduleapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -50,7 +49,23 @@ public class Menu extends AppCompatActivity {
      * Standard activity lifecycle method for initialization.
      */
     protected void onCreate(Bundle savedInstanceState) {
+        applyTheme();
         super.onCreate(savedInstanceState);
+    }
+
+    /**
+     * Applies the saved theme preference (Light/Dark mode) globally.
+     */
+    private void applyTheme() {
+        android.content.SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean("dark_mode", false);
+        int targetMode = isDarkMode ?
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES :
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO;
+
+        if (androidx.appcompat.app.AppCompatDelegate.getDefaultNightMode() != targetMode) {
+            androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(targetMode);
+        }
     }
 
     /**

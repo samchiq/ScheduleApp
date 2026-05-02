@@ -2,6 +2,7 @@ package com.example.scheduleapp;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,8 @@ public class CategoryPage extends Menu {
     private CategoryAdapter categoryAdapter;
     /** Reference to the current user's categories in Firebase. */
     private DatabaseReference categoriesRef;
+    /** TextView shown when there are no categories to display. */
+    private TextView tvEmptyState;
 
     @Override
     /**
@@ -39,6 +42,7 @@ public class CategoryPage extends Menu {
 
         recyclerCategories = findViewById(R.id.recyclerCategories);
         btnAddCategory = findViewById(R.id.btnAddCategory);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
 
         if (currentUser == null) {
             Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
@@ -141,6 +145,15 @@ public class CategoryPage extends Menu {
                     Category category = ds.getValue(Category.class);
                     if (category != null) categoryList.add(category);
                 }
+
+                if (categoryList.isEmpty()) {
+                    recyclerCategories.setVisibility(View.GONE);
+                    tvEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerCategories.setVisibility(View.VISIBLE);
+                    tvEmptyState.setVisibility(View.GONE);
+                }
+
                 categoryAdapter.notifyDataSetChanged();
             }
 

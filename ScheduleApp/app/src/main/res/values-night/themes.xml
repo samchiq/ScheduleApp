@@ -15,11 +15,11 @@
     <item name="colorTertiaryContainer">@color/indigo_800</item>
     <item name="colorOnTertiaryContainer">@color/indigo_50</item>
 
-     <item name="colorSurface">@color/dark_surface</item>
+     <item name="colorSurface">@color/gray_800</item>
     <item name="colorOnSurface">@color/dark_on_surface</item>
     <item name="colorSurfaceVariant">@color/dark_surface_variant</item>
     <item name="colorOnSurfaceVariant">@color/dark_on_surface_variant</item>
-    <item name="colorSurfaceContainer">@color/gray_800</item>
+    <item name="colorSurfaceContainer">@color/gray_900</item>
 
      <item name="colorError">@color/red_400</item>
     <item name="colorOnError">@color/gray_900</item>

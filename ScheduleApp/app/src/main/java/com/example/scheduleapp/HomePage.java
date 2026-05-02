@@ -41,6 +41,8 @@ public class HomePage extends Menu {
     private List<Event> eventList;
     /** Adapter for the events RecyclerView. */
     private EventAdapter eventAdapter;
+    /** TextView shown when there are no events to display. */
+    private TextView tvEmptyState;
 
     @Override
     /**
@@ -55,6 +57,7 @@ public class HomePage extends Menu {
         calendarView = findViewById(R.id.calendarView);
         btnAddEvent = findViewById(R.id.btnAddEvent);
         recyclerEvents = findViewById(R.id.recyclerEvents);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
 
         if (currentUser == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
@@ -475,7 +478,9 @@ public class HomePage extends Menu {
                             if (task.isSuccessful()) {
                                 Toast.makeText(HomePage.this, "Invitation sent!", Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(HomePage.this, "Failed to send invite", Toast.LENGTH_SHORT).show();
+                                Exception e = task.getException();
+                                String errorMsg = (e != null) ? e.getMessage() : "Unknown error";
+                                Toast.makeText(HomePage.this, "Error: " + errorMsg, Toast.LENGTH_LONG).show();
                             }
                         });
             }
@@ -579,6 +584,11 @@ public class HomePage extends Menu {
                 return;
             }
 
+            if (startTime[0] >= endTime[0]) {
+                Toast.makeText(this, "Start time must be earlier than end time", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             String id = (eventId[0] != null) ? eventId[0] : eventsRef.push().getKey();
             Event event = new Event(id, title, category, startTime[0], endTime[0]);
 
@@ -622,10 +632,17 @@ public class HomePage extends Menu {
             cal.set(Calendar.MONTH, selectedCal.get(Calendar.MONTH));
             cal.set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH));
 
-            timeArray[0] = cal.getTimeInMillis();
-            updateTimeText(tvTime,
-                    isStart ? timeArray[0] : otherTime[0],
-                    isStart ? otherTime[0] : timeArray[0]);
+            long newTime = cal.getTimeInMillis();
+            long start = isStart ? newTime : otherTime[0];
+            long end = isStart ? otherTime[0] : newTime;
+
+            if (start >= end) {
+                Toast.makeText(this, "Start time must be earlier than end time", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            timeArray[0] = newTime;
+            updateTimeText(tvTime, start, end);
         });
     }
 
@@ -665,6 +682,15 @@ public class HomePage extends Menu {
                             Event event = ds.getValue(Event.class);
                             if (event != null) eventList.add(event);
                         }
+
+                        if (eventList.isEmpty()) {
+                            recyclerEvents.setVisibility(View.GONE);
+                            tvEmptyState.setVisibility(View.VISIBLE);
+                        } else {
+                            recyclerEvents.setVisibility(View.VISIBLE);
+                            tvEmptyState.setVisibility(View.GONE);
+                        }
+
                         eventAdapter.notifyDataSetChanged();
                     }
 

@@ -96,12 +96,14 @@
             android:background="@drawable/bg_button_secondary"
             android:layout_marginBottom="16dp"/>
 
-         <androidx.cardview.widget.CardView
+         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="?attr/colorOutline"
+            app:cardBackgroundColor="?attr/colorSurface"
             android:layout_marginBottom="32dp">
 
             <LinearLayout
@@ -135,7 +137,7 @@
                     app:thumbTint="?attr/colorOnPrimary"
                     app:trackTint="?attr/colorPrimary"/>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <Button
             android:id="@+id/btnSaveEvent"

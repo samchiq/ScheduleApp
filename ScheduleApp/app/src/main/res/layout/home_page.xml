@@ -54,6 +54,18 @@
                 android:paddingBottom="80dp"
                 tools:listitem="@layout/event_item" />
 
+            <TextView
+                android:id="@+id/tvEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/calendarContainer"
+                android:text="No events for this day.\nClick + to add an event."
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:visibility="gone" />
+
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btnAddEvent"
                 android:layout_width="wrap_content"

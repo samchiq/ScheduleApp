@@ -19,7 +19,7 @@
     <item name="colorOnSurface">@color/gray_900</item>
     <item name="colorSurfaceVariant">@color/gray_100</item>
     <item name="colorOnSurfaceVariant">@color/gray_700</item>
-    <item name="colorSurfaceContainer">@color/gray_50</item>
+    <item name="colorSurfaceContainer">@color/gray_100</item>
 
      <item name="colorError">@color/red_600</item>
     <item name="colorOnError">@color/white</item>
