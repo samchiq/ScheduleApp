@@ -1,6 +1,6 @@
 package com.example.scheduleapp;
 
-import android.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -134,7 +134,7 @@ public class HomePage extends Menu {
      */
     private void showLocationSpinner(Event event) {
   
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle("Location: " + event.getLocationAddress());
   
         String[] options = {"Open Location", "Change Location"};
@@ -367,7 +367,7 @@ public class HomePage extends Menu {
                 new SimpleDateFormat("HH:mm", Locale.getDefault())
                         .format(new Date(endTime));
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Event Invitation")
                 .setMessage(fromName + " invited you to the event:\n\n" + eventTitle + "\nTime: " + timeRange + (location.isEmpty() ? "" : "\nLocation: " + location))
                 .setCancelable(false)
