@@ -182,7 +182,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 context.startActivity(intent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

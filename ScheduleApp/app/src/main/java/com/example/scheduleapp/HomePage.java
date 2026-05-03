@@ -188,7 +188,6 @@ public class HomePage extends Menu {
                 startActivity(intent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             Toast.makeText(this, "Failed to open maps", Toast.LENGTH_SHORT).show();
         }
     }
@@ -255,7 +254,6 @@ public class HomePage extends Menu {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
 
                 Location.LocationResult result =

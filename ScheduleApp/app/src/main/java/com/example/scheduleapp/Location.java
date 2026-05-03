@@ -79,7 +79,6 @@ public class Location {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -133,7 +132,6 @@ public class Location {
             return new LocationResult(displayName, lat, lon, city, country);
 
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }

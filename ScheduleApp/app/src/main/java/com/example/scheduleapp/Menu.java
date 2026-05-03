@@ -69,10 +69,7 @@ public class Menu extends AppCompatActivity {
     private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                android.util.Log.d("Menu", "Requesting POST_NOTIFICATIONS permission");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
-            } else {
-                android.util.Log.d("Menu", "POST_NOTIFICATIONS permission already granted");
             }
         }
     }
@@ -164,16 +161,12 @@ public class Menu extends AppCompatActivity {
                 updateNavHeader();
 
                 if (currentUserNumber != null && !currentUserNumber.isEmpty()) {
-                    android.util.Log.d("NotificationDebug", "Subscribing to invites for: " + currentUserNumber);
                     subscribeToInvites(normalizePhone(currentUserNumber));
-                } else {
-                    android.util.Log.e("NotificationDebug", "currentUserNumber is null or empty for UID: " + uid);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                android.util.Log.e("NotificationDebug", "loadUserProfile cancelled: " + error.getMessage());
             }
         });
     }
@@ -207,7 +200,6 @@ public class Menu extends AppCompatActivity {
         
         // Use toString() to compare paths if getPath() is restricted
         if (inviteRef != null && inviteRef.toString().equals(newInviteRef.toString())) {
-            android.util.Log.d("NotificationDebug", "Already subscribed to: " + normalizedNumber);
             return;
         }
 
@@ -225,25 +217,21 @@ public class Menu extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                android.util.Log.e("NotificationDebug", "inviteListener cancelled: " + error.getMessage());
             }
         };
 
         inviteRef.addValueEventListener(inviteListener);
-        android.util.Log.d("NotificationDebug", "Subscribed successfully to: " + normalizedNumber);
     }
 
     /**
      * Hook for subclasses to handle incoming invitation data changes.
      */
     protected void handleInvites(DataSnapshot snapshot) {
-        android.util.Log.d("NotificationDebug", "handleInvites triggered with " + snapshot.getChildrenCount() + " children");
         for (DataSnapshot inviteSnap : snapshot.getChildren()) {
             java.util.Map<String, Object> invite = (java.util.Map<String, Object>) inviteSnap.getValue();
             if (invite != null) {
                 Object statusObj = invite.get("status");
                 String status = statusObj != null ? statusObj.toString() : "";
-                android.util.Log.d("NotificationDebug", "Invite status: " + status);
                 if ("pending".equals(status)) {
                     String title = invite.get("title") != null ? invite.get("title").toString() : "Event";
                     String fromName = invite.get("fromName") != null ? invite.get("fromName").toString() : "Someone";
@@ -258,7 +246,6 @@ public class Menu extends AppCompatActivity {
      */
     private void showInviteNotification(String inviteId, String title, String fromName) {
         if (inviteId == null) return;
-        android.util.Log.d("NotificationDebug", "Showing notification for: " + title);
 
         Intent intent = new Intent(this, HomePage.class);
         android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
@@ -275,11 +262,8 @@ public class Menu extends AppCompatActivity {
         NotificationManagerCompat manager = NotificationManagerCompat.from(this);
         try {
             manager.notify(inviteId.hashCode(), builder.build());
-            android.util.Log.d("NotificationDebug", "manager.notify called successfully");
         } catch (SecurityException e) {
-            android.util.Log.e("NotificationDebug", "SecurityException in notify", e);
         } catch (Exception e) {
-            android.util.Log.e("NotificationDebug", "Error in notify", e);
         }
     }
 
