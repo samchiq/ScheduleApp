@@ -69,7 +69,10 @@ public class Menu extends AppCompatActivity {
     private void checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                android.util.Log.d("Menu", "Requesting POST_NOTIFICATIONS permission");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            } else {
+                android.util.Log.d("Menu", "POST_NOTIFICATIONS permission already granted");
             }
         }
     }
@@ -146,7 +149,7 @@ public class Menu extends AppCompatActivity {
      * Fetches the current user's profile information from Firebase.
      * Updates the navigation header and subscribes to invitations once data is retrieved.
      */
-    private void loadUserProfile() {
+    protected void loadUserProfile() {
         String uid = currentUser.getUid();
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {

@@ -100,6 +100,7 @@ public class HomePage extends Menu {
             @Override
             public void onDeleteClick(Event event) {
                 if (event.getId() != null) {
+                    NotificationHelper.cancelEventNotification(HomePage.this, event.getId());
                     eventsRef.child(event.getId()).removeValue();
                     loadEventsForDay(selectedDate);
                     Toast.makeText(HomePage.this, "Event deleted", Toast.LENGTH_SHORT).show();
@@ -392,6 +393,7 @@ public class HomePage extends Menu {
                         newEvent.setColor(color);
                         
                         userEventsRef.child(newEventId).setValue(newEvent);
+                        NotificationHelper.scheduleEventNotification(HomePage.this, newEventId, eventTitle, startTime);
                     }
 
                     FirebaseDatabase.getInstance()
@@ -642,7 +644,10 @@ public class HomePage extends Menu {
                 event.setLongitude(eventToEdit.getLongitude());
             }
 
-            if (id != null) eventsRef.child(id).setValue(event);
+            if (id != null) {
+                eventsRef.child(id).setValue(event);
+                NotificationHelper.scheduleEventNotification(HomePage.this, id, title, startTime[0]);
+            }
 
             dialog.dismiss();
             loadEventsForDay(selectedDate);
@@ -677,15 +682,11 @@ public class HomePage extends Menu {
             cal.set(Calendar.DAY_OF_MONTH, selectedCal.get(Calendar.DAY_OF_MONTH));
 
             long newTime = cal.getTimeInMillis();
+            timeArray[0] = newTime;
+
             long start = isStart ? newTime : otherTime[0];
             long end = isStart ? otherTime[0] : newTime;
 
-            if (start >= end) {
-                Toast.makeText(this, "Start time must be earlier than end time", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            timeArray[0] = newTime;
             updateTimeText(tvTime, start, end);
         });
     }
@@ -726,7 +727,14 @@ public class HomePage extends Menu {
                         eventList.clear();
                         for (DataSnapshot ds : snapshot.getChildren()) {
                             Event event = ds.getValue(Event.class);
-                            if (event != null) eventList.add(event);
+                            if (event != null) {
+                                eventList.add(event);
+                                // Automatically schedule notifications for upcoming events found
+                                if (event.getStartTime() > System.currentTimeMillis()) {
+                                    NotificationHelper.scheduleEventNotification(HomePage.this, 
+                                            event.getId(), event.getTitle(), event.getStartTime());
+                                }
+                            }
                         }
 
                         if (eventList.isEmpty()) {

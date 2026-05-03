@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -12,6 +13,8 @@ import androidx.core.app.NotificationManagerCompat;
  * Triggered by AlarmManager to alert the user when an event is starting.
  */
 public class EventNotificationReceiver extends BroadcastReceiver {
+
+    private static final String TAG = "EventNotificationRec";
 
     @Override
     /**
@@ -22,12 +25,17 @@ public class EventNotificationReceiver extends BroadcastReceiver {
         String eventId = intent.getStringExtra("eventId");
         String title = intent.getStringExtra("title");
 
-        if (eventId == null || title == null) return;
+        Log.d(TAG, "onReceive triggered for title: " + title + " (eventId=" + eventId + ")");
+
+        if (eventId == null || title == null) {
+            Log.w(TAG, "Missing data in intent, ignoring broadcast");
+            return;
+        }
 
         Intent activityIntent = new Intent(context, HomePage.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context,
-                0,
+                eventId.hashCode(),
                 activityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
@@ -41,10 +49,18 @@ public class EventNotificationReceiver extends BroadcastReceiver {
                 .setContentIntent(pendingIntent);
 
         NotificationManagerCompat manager = NotificationManagerCompat.from(context);
+        
+        if (!manager.areNotificationsEnabled()) {
+            Log.w(TAG, "Notifications are disabled for this app!");
+        }
+
         try {
+            Log.d(TAG, "Calling manager.notify for " + title);
             manager.notify(eventId.hashCode(), builder.build());
         } catch (SecurityException e) {
-            e.printStackTrace();
+            Log.e(TAG, "SecurityException while showing notification", e);
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing notification", e);
         }
     }
 }

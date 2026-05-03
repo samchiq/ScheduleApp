@@ -136,6 +136,95 @@
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="?attr/colorOutline"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Account"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditName"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Edit Name"
+                        android:textAlignment="viewStart"
+                        app:icon="@drawable/ic_edit"
+                        android:textColor="?attr/colorOnSurface"
+                        app:iconTint="?attr/colorOnSurface"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditPhone"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Edit Phone Number"
+                        android:textAlignment="viewStart"
+                        app:icon="@drawable/ic_edit"
+                        android:textColor="?attr/colorOnSurface"
+                        app:iconTint="?attr/colorOnSurface"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditEmail"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Edit Email"
+                        android:textAlignment="viewStart"
+                        app:icon="@drawable/ic_edit"
+                        android:textColor="?attr/colorOnSurface"
+                        app:iconTint="?attr/colorOnSurface"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditPassword"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Edit Password"
+                        android:textAlignment="viewStart"
+                        app:icon="@drawable/ic_edit"
+                        android:textColor="?attr/colorOnSurface"
+                        app:iconTint="?attr/colorOnSurface"/>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDeleteAccount"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Delete Account"
+                        android:textAlignment="viewStart"
+                        app:icon="@drawable/ic_delete"
+                        android:textColor="?attr/colorError"
+                        app:iconTint="?attr/colorError"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </LinearLayout>
 
